@@ -4,6 +4,7 @@ import { useNavigation } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
 import { getProfile } from '../api';
 import { useThemeColors } from '../theme';
+import { useAuth } from '../auth';
 
 // Minimal shape for gyms the user belongs to
 type UserGym = { business_id: string; name: string; status?: string };
@@ -17,6 +18,7 @@ function initialsFromName(name: string) {
 
 export default function NewBookingScreen() {
   const { theme } = useThemeColors();
+  const { logout } = useAuth();
   const navigation = useNavigation<any>();
   const [gyms, setGyms] = useState<UserGym[]>([]);
   const [loading, setLoading] = useState(true);
@@ -35,10 +37,8 @@ export default function NewBookingScreen() {
         setGyms(filtered);
       } catch (e: any) {
         if (e?.code === 401) {
-          // Prompt re-login on unauthorized
           alert('Your session expired. Please log in again.');
-          // @ts-ignore
-          navigation.reset({ index: 0, routes: [{ name: 'Login' }] });
+          await logout();
           return;
         }
         // Non-fatal otherwise: keep empty list and let ListEmptyComponent render

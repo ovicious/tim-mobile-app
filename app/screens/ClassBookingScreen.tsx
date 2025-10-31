@@ -3,6 +3,7 @@ import { View, Text, StyleSheet, FlatList, TouchableOpacity, ActivityIndicator, 
 import { useNavigation, useRoute } from '@react-navigation/native';
 import { getProfile, getClassesForBusiness, getSessionsForClass, bookClassSession } from '../api';
 import { useThemeColors } from '../theme';
+import { useAuth } from '../auth';
 
 type GymClass = { id: string; name: string; description?: string };
 type Session = { id: string; start_time: string; end_time?: string; available_slots?: number };
@@ -19,6 +20,7 @@ export default function ClassBookingScreen() {
   const [booking, setBooking] = useState<string | null>(null);
   const navigation = useNavigation();
   const route = useRoute<any>();
+  const { logout } = useAuth();
 
   useEffect(() => {
     async function init() {
@@ -35,8 +37,7 @@ export default function ClassBookingScreen() {
         const err: any = e;
         if (err?.code === 401) {
           alert('Your session expired. Please log in again.');
-          // @ts-ignore
-          navigation.reset({ index: 0, routes: [{ name: 'Login' }] });
+          await logout();
           return;
         }
       } finally {
@@ -49,6 +50,19 @@ export default function ClassBookingScreen() {
   // Helper to get YYYY-MM-DD
   const ymd = (d: Date) => d.toISOString().slice(0, 10);
   const selectedYMD = useMemo(() => ymd(selectedDate), [selectedDate]);
+
+  // Build next 14 days date strip once
+  const dateStrip: Date[] = useMemo(() => {
+    const arr: Date[] = [];
+    const start = new Date();
+    start.setHours(0, 0, 0, 0);
+    for (let i = 0; i < 14; i++) {
+      const d = new Date(start);
+      d.setDate(start.getDate() + i);
+      arr.push(d);
+    }
+    return arr;
+  }, []);
 
   // Preload sessions for all classes (once) when business/classes ready
   useEffect(() => {
@@ -91,8 +105,7 @@ export default function ClassBookingScreen() {
       } catch (e: any) {
         if (e?.code === 401) {
           alert('Your session expired. Please log in again.');
-          // @ts-ignore
-          navigation.reset({ index: 0, routes: [{ name: 'Login' }] });
+          await logout();
           return;
         }
       }
@@ -122,17 +135,7 @@ export default function ClassBookingScreen() {
 
       {/* Date selector strip */}
       <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ paddingVertical: 8 }}>
-        {useMemo(() => {
-          const arr: Date[] = [];
-          const start = new Date();
-          start.setHours(0, 0, 0, 0);
-          for (let i = 0; i < 14; i++) {
-            const d = new Date(start);
-            d.setDate(start.getDate() + i);
-            arr.push(d);
-          }
-          return arr;
-        }, []).map((d) => {
+        {dateStrip.map((d) => {
           const isSelected = ymd(d) === selectedYMD;
           return (
             <TouchableOpacity
