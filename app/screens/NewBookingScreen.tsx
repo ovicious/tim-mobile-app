@@ -25,13 +25,17 @@ export default function NewBookingScreen() {
     async function load() {
       try {
         const profile = await getProfile();
+        console.log('NewBookingScreen - Full profile response:', JSON.stringify(profile, null, 2));
         const data = profile?.data ?? profile ?? {};
+        console.log('NewBookingScreen - Extracted data:', JSON.stringify(data, null, 2));
         // Try multiple shapes to stay compatible
         const arr: UserGym[] =
           data?.businesses?.map((b: any) => ({ business_id: b.business_id || b.id, name: b.name, status: b.membership_status || b.status })) ||
           (data?.business_id ? [{ business_id: data.business_id, name: data.business_name || 'My Gym', status: 'active' }] : []);
+        console.log('NewBookingScreen - Parsed gyms array:', JSON.stringify(arr, null, 2));
         // Prefer gyms where membership is active/approved if status present
         const filtered = arr.filter(g => !g.status || /(active|approved)/i.test(g.status));
+        console.log('NewBookingScreen - Filtered gyms:', JSON.stringify(filtered, null, 2));
         setGyms(filtered);
       } finally {
         setLoading(false);
