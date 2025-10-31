@@ -33,9 +33,15 @@ export default function NewBookingScreen() {
         // Prefer gyms where membership is active/approved if status present
         const filtered = arr.filter(g => !g.status || /(active|approved)/i.test(g.status));
         setGyms(filtered);
-      } catch (e) {
-        // Non-fatal: keep empty list and let ListEmptyComponent render
-        // You can inspect errors via device logs if needed.
+      } catch (e: any) {
+        if (e?.code === 401) {
+          // Prompt re-login on unauthorized
+          alert('Your session expired. Please log in again.');
+          // @ts-ignore
+          navigation.reset({ index: 0, routes: [{ name: 'Login' }] });
+          return;
+        }
+        // Non-fatal otherwise: keep empty list and let ListEmptyComponent render
       } finally {
         setLoading(false);
       }

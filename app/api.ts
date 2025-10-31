@@ -20,6 +20,11 @@ export async function apiGet(path: string) {
       ...(stored ? { Authorization: `Bearer ${stored}` } : API_TOKEN ? { Authorization: `Bearer ${API_TOKEN}` } : {}),
     },
   });
+  if (res.status === 401 || res.status === 403) {
+    const err = new Error('Unauthorized');
+    (err as any).code = 401;
+    throw err;
+  }
   if (!res.ok) throw new Error(await res.text());
   return res.json();
 }
@@ -48,6 +53,11 @@ export async function apiPost(path: string, body: any) {
     throw new Error('API response is not valid JSON');
   }
   console.log('apiPost parsed response:', JSON.stringify(json, null, 2));
+  if (res.status === 401 || res.status === 403) {
+    const err = new Error('Unauthorized');
+    (err as any).code = 401;
+    throw err;
+  }
   if (!res.ok) throw new Error(text);
   return json;
 }
@@ -60,6 +70,11 @@ export async function apiDelete(path: string) {
       ...(stored ? { Authorization: `Bearer ${stored}` } : API_TOKEN ? { Authorization: `Bearer ${API_TOKEN}` } : {}),
     },
   });
+  if (res.status === 401 || res.status === 403) {
+    const err = new Error('Unauthorized');
+    (err as any).code = 401;
+    throw err;
+  }
   if (!res.ok) throw new Error(await res.text());
   return res.json();
 }
