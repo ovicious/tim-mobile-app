@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, ActivityIndicator, Alert } from 'react-native';
-import { theme } from '../theme';
+import { useThemeColors } from '../theme';
 import { apiPost } from '../api';
 import { useAuth } from '../auth';
 
 export default function LoginScreen({ navigation }: any) {
+  const { theme } = useThemeColors();
   const { login } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -51,10 +52,10 @@ export default function LoginScreen({ navigation }: any) {
       setLoading(false);
     }
   };  return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Sign in</Text>
+    <View style={[styles.containerBase, { backgroundColor: theme.colors.background }]}>
+      <Text style={[styles.title, { color: theme.colors.text }]}>Sign in</Text>
       <TextInput
-        style={styles.input}
+        style={[styles.input, { backgroundColor: theme.colors.inputBg, color: theme.colors.text, borderColor: theme.colors.inputBorder }]}
         placeholder="Email"
         autoCapitalize="none"
         keyboardType="email-address"
@@ -63,33 +64,31 @@ export default function LoginScreen({ navigation }: any) {
         placeholderTextColor={theme.colors.placeholder}
       />
       <TextInput
-        style={styles.input}
+        style={[styles.input, { backgroundColor: theme.colors.inputBg, color: theme.colors.text, borderColor: theme.colors.inputBorder }]}
         placeholder="Password"
         secureTextEntry
         value={password}
         onChangeText={setPassword}
         placeholderTextColor={theme.colors.placeholder}
       />
-      <TouchableOpacity style={styles.button} onPress={onSubmit} disabled={loading}>
+      <TouchableOpacity style={[styles.button, { backgroundColor: theme.colors.primary }]} onPress={onSubmit} disabled={loading}>
         {loading ? <ActivityIndicator color="#fff" /> : <Text style={styles.buttonText}>Login</Text>}
       </TouchableOpacity>
       
       <TouchableOpacity style={styles.signupLink} onPress={() => navigation.navigate('Signup')}>
-        <Text style={styles.signupText}>Don't have an account? <Text style={styles.signupBold}>Sign up</Text></Text>
+        <Text style={[styles.signupText, { color: theme.colors.textMuted }]}>Don't have an account? <Text style={[styles.signupBold, { color: theme.colors.primary }]}>Sign up</Text></Text>
       </TouchableOpacity>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: theme.colors.background, padding: 16, justifyContent: 'center' },
-  title: { fontSize: 24, fontWeight: '700', textAlign: 'center', marginBottom: 24, color: theme.colors.text },
-  input: {
-    backgroundColor: theme.colors.inputBg, color: theme.colors.text, borderRadius: 10, paddingHorizontal: 14, paddingVertical: 12, marginBottom: 12, borderWidth: 1, borderColor: theme.colors.inputBorder,
-  },
-  button: { backgroundColor: theme.colors.primary, borderRadius: 10, paddingVertical: 12, alignItems: 'center', marginTop: 4 },
+  containerBase: { flex: 1, padding: 16, justifyContent: 'center' },
+  title: { fontSize: 24, fontWeight: '700', textAlign: 'center', marginBottom: 24 },
+  input: { borderRadius: 10, paddingHorizontal: 14, paddingVertical: 12, marginBottom: 12, borderWidth: 1 },
+  button: { borderRadius: 10, paddingVertical: 12, alignItems: 'center', marginTop: 4 },
   buttonText: { color: '#fff', fontWeight: '700', fontSize: 16 },
   signupLink: { marginTop: 20, alignItems: 'center' },
-  signupText: { color: theme.colors.textMuted, fontSize: 14 },
-  signupBold: { color: theme.colors.primary, fontWeight: '700' },
+  signupText: { fontSize: 14 },
+  signupBold: { fontWeight: '700' },
 });

@@ -69,27 +69,27 @@ export default function ClassBookingScreen() {
   }
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Book a Class</Text>
+    <View style={[styles.containerBase, { backgroundColor: theme.colors.background }]}>
+      <Text style={[styles.title, { color: theme.colors.text }]}>Book a Class</Text>
       {!businessId ? (
-        <Text style={styles.error}>No business found in profile.</Text>
+        <Text style={[styles.error, { color: theme.colors.danger }]}>No business found in profile.</Text>
       ) : (
         <FlatList
           data={classes}
           keyExtractor={(item: GymClass) => item.id}
           renderItem={({ item }: { item: GymClass }) => (
-            <View style={styles.card}>
+            <View style={[styles.card, { backgroundColor: theme.colors.surface, borderColor: theme.colors.border }]}>
               <TouchableOpacity onPress={() => toggleExpand(item.id)}>
-                <Text style={styles.className}>{item.name}</Text>
-                {!!item.description && <Text style={styles.classDesc}>{item.description}</Text>}
+                <Text style={[styles.className, { color: theme.colors.primary }]}>{item.name}</Text>
+                {!!item.description && <Text style={[styles.classDesc, { color: theme.colors.textMuted }]}>{item.description}</Text>}
               </TouchableOpacity>
               {expandedClassId === item.id && (
                 <View style={styles.sessionList}>
                   {(sessionsByClass[item.id] || []).map((s) => (
                     <View key={s.id} style={styles.sessionRow}>
-                      <Text style={styles.classTime}>{new Date(s.start_time).toLocaleString()}</Text>
+                      <Text style={[styles.classTime, { color: theme.colors.text }]}>{new Date(s.start_time).toLocaleString()}</Text>
                       <TouchableOpacity
-                        style={styles.bookButton}
+                        style={[styles.bookButton, { backgroundColor: theme.colors.primary }]}
                         onPress={() => handleBook(item.id, s.id)}
                         disabled={booking === s.id}
                       >
@@ -108,20 +108,14 @@ export default function ClassBookingScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#000', // will be overridden inline
-    padding: 16,
-  },
+  containerBase: { flex: 1, padding: 16 },
   title: {
     fontSize: 22,
     fontWeight: 'bold',
     marginBottom: 16,
-    color: '#fff',
     alignSelf: 'center',
   },
   card: {
-    backgroundColor: '#222',
     borderRadius: 10,
     padding: 18,
     marginVertical: 10,
@@ -130,21 +124,17 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.3,
     shadowRadius: 4,
     borderWidth: 1,
-    borderColor: '#333',
   },
   classDesc: {
     fontSize: 14,
-    color: '#aaa',
     marginTop: 4,
   },
   className: {
     fontSize: 18,
     fontWeight: '500',
-    color: '#4C8BFF',
   },
   classTime: {
     fontSize: 15,
-    color: '#fff',
     marginBottom: 8,
   },
   sessionList: {
@@ -158,7 +148,6 @@ const styles = StyleSheet.create({
     paddingVertical: 6,
   },
   bookButton: {
-    backgroundColor: '#4C8BFF',
     borderRadius: 8,
     paddingVertical: 8,
     paddingHorizontal: 16,
@@ -169,5 +158,5 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     fontSize: 16,
   },
-  error: { color: '#FF4D4F', alignSelf: 'center' },
+  error: { alignSelf: 'center' },
 });
