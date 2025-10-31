@@ -2,6 +2,8 @@ import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { theme } from '../theme';
+
 type RootStackParamList = {
   Home: undefined;
   Classes: undefined;
@@ -30,7 +32,7 @@ export default function DashboardScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f5f5f5',
+    backgroundColor: theme.colors.background,
     alignItems: 'center',
     justifyContent: 'center',
     padding: 16,
@@ -39,10 +41,10 @@ const styles = StyleSheet.create({
     fontSize: 24,
     fontWeight: 'bold',
     marginBottom: 32,
-    color: '#222',
+    color: theme.colors.text,
   },
   card: {
-    backgroundColor: '#fff',
+    backgroundColor: theme.colors.surface,
     borderRadius: 12,
     padding: 24,
     marginVertical: 12,
@@ -50,12 +52,14 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     elevation: 2,
     shadowColor: '#000',
-    shadowOpacity: 0.1,
+    shadowOpacity: 0.3,
     shadowRadius: 4,
+    borderWidth: 1,
+    borderColor: theme.colors.border,
   },
   cardText: {
     fontSize: 18,
-    color: '#007AFF',
+    color: theme.colors.primary,
     fontWeight: '500',
   },
 });

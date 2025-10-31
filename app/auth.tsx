@@ -50,3 +50,7 @@ export function useAuth() {
 export async function getStoredToken(): Promise<string | null> {
   return await SecureStore.getItemAsync(TOKEN_KEY);
 }
+
+export async function storeToken(token: string): Promise<void> {
+  return await SecureStore.setItemAsync(TOKEN_KEY, token);
+}

@@ -39,6 +39,7 @@ A mobile application for gym members and trainers built with Expo and React Nati
 - **Secure Storage**: expo-secure-store
 - **Icons**: @expo/vector-icons (Ionicons)
 - **HTTP Client**: Native Fetch API
+ - **Theming**: Auto light/dark based on device Appearance
 
 ## 📦 Installation
 
@@ -198,6 +199,17 @@ mobile/
 - ✅ TypeScript for type safety
 - ✅ Separation of concerns (API, Auth, UI)
 - ✅ Secure token storage
+ - ✅ System theme auto-detection (light/dark)
+
+### Theming
+
+The app supports light and dark themes and auto-detects the device setting using `Appearance.getColorScheme()`.
+
+- Theme palettes are defined in `app/theme.ts` as `lightTheme` and `darkTheme`.
+- A `theme` export is selected at startup based on the device mode.
+- React Navigation also switches between its Light/Dark themes accordingly.
+
+To force a theme during development, temporarily change the exported `isDarkMode` constant in `app/theme.ts`.
 - ✅ Error handling and user feedback
 - ✅ Loading states
 - ✅ Environment-based configuration

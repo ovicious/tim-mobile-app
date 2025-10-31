@@ -1,12 +1,14 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, FlatList, TouchableOpacity, ActivityIndicator } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, useRoute } from '@react-navigation/native';
 import { getProfile, getClassesForBusiness, getSessionsForClass, bookClassSession } from '../api';
+import { useThemeColors } from '../theme';
 
 type GymClass = { id: string; name: string; description?: string };
 type Session = { id: string; start_time: string; end_time?: string; available_slots?: number };
 
 export default function ClassBookingScreen() {
+  const { theme } = useThemeColors();
   const [businessId, setBusinessId] = useState<string | null>(null);
   const [classes, setClasses] = useState<GymClass[]>([]);
   const [sessionsByClass, setSessionsByClass] = useState<Record<string, Session[]>>({});
@@ -14,12 +16,14 @@ export default function ClassBookingScreen() {
   const [loading, setLoading] = useState(true);
   const [booking, setBooking] = useState<string | null>(null);
   const navigation = useNavigation();
+  const route = useRoute<any>();
 
   useEffect(() => {
     async function init() {
       try {
-        const profile = await getProfile();
-        const bid = profile?.data?.business_id || profile?.business_id;
+        const routeBusinessId = route?.params?.businessId as string | undefined;
+        const profile = !routeBusinessId ? await getProfile() : null;
+        const bid = routeBusinessId || profile?.data?.business_id || profile?.business_id;
         setBusinessId(bid);
         if (bid) {
           const cls = await getClassesForBusiness(bid);
@@ -61,7 +65,7 @@ export default function ClassBookingScreen() {
   };
 
   if (loading) {
-    return <ActivityIndicator style={{ flex: 1 }} size="large" color="#007AFF" />;
+    return <ActivityIndicator style={{ flex: 1, backgroundColor: theme.colors.background }} size="large" color={theme.colors.primary} />;
   }
 
   return (
@@ -106,39 +110,41 @@ export default function ClassBookingScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f5f5f5',
+    backgroundColor: '#000', // will be overridden inline
     padding: 16,
   },
   title: {
     fontSize: 22,
     fontWeight: 'bold',
     marginBottom: 16,
-    color: '#222',
+    color: '#fff',
     alignSelf: 'center',
   },
   card: {
-    backgroundColor: '#fff',
+    backgroundColor: '#222',
     borderRadius: 10,
     padding: 18,
     marginVertical: 10,
     elevation: 2,
     shadowColor: '#000',
-    shadowOpacity: 0.1,
+    shadowOpacity: 0.3,
     shadowRadius: 4,
+    borderWidth: 1,
+    borderColor: '#333',
   },
   classDesc: {
     fontSize: 14,
-    color: '#666',
+    color: '#aaa',
     marginTop: 4,
   },
   className: {
     fontSize: 18,
     fontWeight: '500',
-    color: '#007AFF',
+    color: '#4C8BFF',
   },
   classTime: {
     fontSize: 15,
-    color: '#555',
+    color: '#fff',
     marginBottom: 8,
   },
   sessionList: {
@@ -152,7 +158,7 @@ const styles = StyleSheet.create({
     paddingVertical: 6,
   },
   bookButton: {
-    backgroundColor: '#007AFF',
+    backgroundColor: '#4C8BFF',
     borderRadius: 8,
     paddingVertical: 8,
     paddingHorizontal: 16,
@@ -163,5 +169,5 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     fontSize: 16,
   },
-  error: { color: 'red', alignSelf: 'center' },
+  error: { color: '#FF4D4F', alignSelf: 'center' },
 });

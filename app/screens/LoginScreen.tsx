@@ -4,7 +4,7 @@ import { theme } from '../theme';
 import { apiPost } from '../api';
 import { useAuth } from '../auth';
 
-export default function LoginScreen() {
+export default function LoginScreen({ navigation }: any) {
   const { login } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -20,6 +20,21 @@ export default function LoginScreen() {
       console.log('Attempting login with email:', email);
       const resp = await apiPost('/api/v1/auth/login', { email, password });
       console.log('Login API response:', JSON.stringify(resp, null, 2));
+      
+      // Handle different approval states
+      if (resp?.error) {
+        if (resp.error.includes('verify your email')) {
+          Alert.alert('Email Not Verified', 'Please verify your email before logging in. Check your inbox for the verification link.');
+        } else if (resp.error.includes('pending approval')) {
+          Alert.alert('Approval Pending', 'Your account is awaiting approval from the gym administrator. You will receive an email once approved.');
+        } else if (resp.error.includes('rejected')) {
+          Alert.alert('Account Rejected', 'Your membership request was rejected. Please contact the gym for more information.');
+        } else {
+          Alert.alert('Login Failed', resp.error);
+        }
+        return;
+      }
+      
       const token = resp?.data?.token || resp?.token;
       console.log('Extracted token:', token ? 'Found' : 'Not found');
       if (!token) {
@@ -58,6 +73,10 @@ export default function LoginScreen() {
       <TouchableOpacity style={styles.button} onPress={onSubmit} disabled={loading}>
         {loading ? <ActivityIndicator color="#fff" /> : <Text style={styles.buttonText}>Login</Text>}
       </TouchableOpacity>
+      
+      <TouchableOpacity style={styles.signupLink} onPress={() => navigation.navigate('Signup')}>
+        <Text style={styles.signupText}>Don't have an account? <Text style={styles.signupBold}>Sign up</Text></Text>
+      </TouchableOpacity>
     </View>
   );
 }
@@ -70,4 +89,7 @@ const styles = StyleSheet.create({
   },
   button: { backgroundColor: theme.colors.primary, borderRadius: 10, paddingVertical: 12, alignItems: 'center', marginTop: 4 },
   buttonText: { color: '#fff', fontWeight: '700', fontSize: 16 },
+  signupLink: { marginTop: 20, alignItems: 'center' },
+  signupText: { color: theme.colors.textMuted, fontSize: 14 },
+  signupBold: { color: theme.colors.primary, fontWeight: '700' },
 });
