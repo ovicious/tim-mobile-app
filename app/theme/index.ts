@@ -49,28 +49,48 @@ export function useThemeColors(): { theme: AppTheme; isDarkMode: boolean } {
   try {
     const schemeHook = useColorScheme();
     const isDark = schemeHook === 'dark';
+    
+    // Get theme object
     const theme = isDark ? darkTheme : lightTheme;
     
-    if (!theme || !theme.colors) {
-      logger.error('useThemeColors', 'Theme or colors is undefined', { isDark, theme: !!theme });
-      // Fallback to light theme if something goes wrong
-      return { 
-        theme: lightTheme, 
-        isDarkMode: false 
-      };
+    // Extensive validation to catch any issues
+    if (!theme) {
+      logger.error('useThemeColors', 'Theme object is null or undefined', { isDark, schemeHook });
+      return { theme: lightTheme, isDarkMode: false };
+    }
+    
+    if (!theme.colors) {
+      logger.error('useThemeColors', 'Theme.colors is undefined', { 
+        isDark, 
+        schemeHook,
+        themeKeys: Object.keys(theme || {})
+      });
+      return { theme: lightTheme, isDarkMode: false };
+    }
+    
+    // Verify critical color properties exist
+    const requiredColors = ['background', 'text', 'primary', 'surface', 'border'];
+    const missingColors = requiredColors.filter(color => !theme.colors[color as keyof typeof theme.colors]);
+    
+    if (missingColors.length > 0) {
+      logger.error('useThemeColors', 'Theme missing required colors', { 
+        missingColors,
+        isDark,
+        availableColors: Object.keys(theme.colors)
+      });
+      return { theme: lightTheme, isDarkMode: false };
     }
 
-    return { 
-      theme, 
-      isDarkMode: isDark 
-    };
+    logger.debug('useThemeColors', 'Theme validated successfully', { 
+      isDark,
+      colorCount: Object.keys(theme.colors).length 
+    });
+
+    return { theme, isDarkMode: isDark };
   } catch (error) {
-    logger.error('useThemeColors', 'Error in useThemeColors hook', error);
-    // Fallback to light theme
-    return { 
-      theme: lightTheme, 
-      isDarkMode: false 
-    };
+    logger.error('useThemeColors', 'Fatal error in useThemeColors hook', error);
+    // Fallback to light theme on any error
+    return { theme: lightTheme, isDarkMode: false };
   }
 }
 

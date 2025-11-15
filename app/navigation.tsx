@@ -14,6 +14,7 @@ import TrainersScreen from './screens/TrainersScreen';
 import ProfileScreen from './screens/ProfileScreen';
 import ClassBookingScreen from './screens/ClassBookingScreen';
 import MyBookingsScreen from './screens/MyBookingsScreen';
+import NewBookingScreen from './screens/NewBookingScreen';
 import LoginScreen from './screens/LoginScreen';
 import SignupScreen from './screens/SignupScreen';
 import VerifyEmailScreen from './screens/VerifyEmailScreen';
@@ -34,6 +35,12 @@ function Tabs() {
   const insets = useSafeAreaInsets();
   const { theme } = useThemeColors();
   const [userInfo, setUserInfo] = useState<{ firstName: string; gymName: string } | null>(null);
+
+  // Defensive check - theme should exist at this point
+  if (!theme || !theme.colors) {
+    logger.error('Tabs', 'Theme is undefined in Tabs component');
+    return null;
+  }
 
   useEffect(() => {
     async function loadUserInfo() {
@@ -174,8 +181,8 @@ function NavigationContent() {
           <Stack.Screen name="Home" component={HomeScreen} />
           <Stack.Screen name="Classes" component={ClassesScreen} />
           <Stack.Screen name="MyBookings" component={MyBookingsScreen} options={{ headerShown: true, title: 'My Bookings' }} />
-          <Stack.Screen name="NewBooking" component={require('./screens/NewBookingScreen').default} options={{ headerShown: true, title: 'New Booking' }} />
-          <Stack.Screen name="BookClass" component={require('./screens/ClassBookingScreen').default} options={{ headerShown: true, title: 'Book a Class' }} />
+          <Stack.Screen name="NewBooking" component={NewBookingScreen} options={{ headerShown: true, title: 'New Booking' }} />
+          <Stack.Screen name="BookClass" component={ClassBookingScreen} options={{ headerShown: true, title: 'Book a Class' }} />
         </Stack.Navigator>
       </View>
     );

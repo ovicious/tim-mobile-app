@@ -25,8 +25,8 @@ export default function NewBookingScreen() {
   const [gyms, setGyms] = useState<UserGym[]>([]);
   const [loading, setLoading] = useState(true);
 
-  const sharedStyles = useMemo(() => createSharedStyles(theme), [theme]);
-  const styles = useMemo(() => createNewBookingStyles(theme), [theme]);
+  const sharedStyles = useMemo(() => theme ? createSharedStyles(theme) : {} as any, [theme]);
+  const styles = useMemo(() => theme ? createNewBookingStyles(theme) : {} as any, [theme]);
 
   useEffect(() => {
     async function load() {
@@ -53,6 +53,16 @@ export default function NewBookingScreen() {
     }
     load();
   }, []);
+
+  // Defensive check for theme after all hooks are called
+  if (!theme || !theme.colors) {
+    return (
+      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+        <ActivityIndicator />
+        <Text>Loading...</Text>
+      </View>
+    );
+  }
 
   if (loading) return <ActivityIndicator style={[styles.container, { backgroundColor: theme.colors.background }]} color={theme.colors.primary} size="large" />;
 
