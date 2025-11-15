@@ -1,13 +1,19 @@
-import React, { useState, useEffect } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, ScrollView, Alert, ActivityIndicator } from 'react-native';
-import { theme } from '../theme';
+import React, { useState, useEffect, useMemo } from 'react';
+import { View, Text, StyleSheet, ScrollView, Alert, ActivityIndicator } from 'react-native';
+import { useThemeColors } from '../theme';
+import { createSharedStyles } from '../styles/sharedStyles';
+import { Card, Button } from '../components';
 import { API_BASE_URL } from '../api';
 import { getStoredToken } from '../auth';
 
 export default function SelectGymScreen({ navigation }: any) {
+  const { theme } = useThemeColors();
   const [businesses, setBusinesses] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
+
+  const sharedStyles = useMemo(() => createSharedStyles(theme), [theme]);
+  const styles = useMemo(() => createSelectGymStyles(theme), [theme]);
 
   useEffect(() => {
     fetchBusinesses();
@@ -68,103 +74,59 @@ export default function SelectGymScreen({ navigation }: any) {
 
   if (loading) {
     return (
-      <View style={styles.loadingContainer}>
+      <View style={[styles.loadingContainer, { backgroundColor: theme.colors.background }]}>
         <ActivityIndicator size="large" color={theme.colors.primary} />
       </View>
     );
   }
 
   return (
-    <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer}>
+    <ScrollView style={[styles.container, { backgroundColor: theme.colors.background }]} contentContainerStyle={styles.contentContainer}>
       <View style={styles.header}>
-        <Text style={styles.title}>Select Your Gym</Text>
-        <Text style={styles.subtitle}>Choose the gym you want to join</Text>
+        <Text style={[styles.title, { color: theme.colors.text }]}>Select Your Gym</Text>
+        <Text style={[styles.subtitle, { color: theme.colors.textMuted }]}>Choose the gym you want to join</Text>
       </View>
 
       {businesses.map((business) => (
-        <TouchableOpacity
+        <Card
           key={business.business_id}
+          theme={theme}
+          variant="default"
           style={styles.gymCard}
           onPress={() => handleSelectGym(business.business_id, business.name)}
-          disabled={submitting}
         >
-          <Text style={styles.gymName}>🏢 {business.name}</Text>
+          <Text style={[styles.gymName, { color: theme.colors.text }]}>🏢 {business.name}</Text>
           {business.venue_name && (
-            <Text style={styles.gymVenue}>{business.venue_name}</Text>
+            <Text style={[styles.gymVenue, { color: theme.colors.textMuted }]}>{business.venue_name}</Text>
           )}
           {business.address && (
-            <Text style={styles.gymAddress}>📍 {business.address}</Text>
+            <Text style={[styles.gymAddress, { color: theme.colors.textMuted }]}>📍 {business.address}</Text>
           )}
-        </TouchableOpacity>
+        </Card>
       ))}
 
       {businesses.length === 0 && (
         <View style={styles.emptyState}>
-          <Text style={styles.emptyText}>No gyms available at the moment</Text>
+          <Text style={[styles.emptyText, { color: theme.colors.textMuted }]}>No gyms available at the moment</Text>
         </View>
       )}
     </ScrollView>
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: theme.colors.background,
-  },
-  contentContainer: {
-    padding: 24,
-    paddingTop: 60,
-  },
-  loadingContainer: {
-    flex: 1,
-    backgroundColor: theme.colors.background,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  header: {
-    marginBottom: 24,
-  },
-  title: {
-    fontSize: 32,
-    fontWeight: '700',
-    color: theme.colors.text,
-    marginBottom: 8,
-  },
-  subtitle: {
-    fontSize: 16,
-    color: theme.colors.textMuted,
-  },
-  gymCard: {
-    backgroundColor: theme.colors.surface,
-    borderWidth: 1,
-    borderColor: theme.colors.border,
-    borderRadius: 12,
-    padding: 20,
-    marginBottom: 12,
-  },
-  gymName: {
-    fontSize: 18,
-    fontWeight: '700',
-    color: theme.colors.text,
-    marginBottom: 8,
-  },
-  gymVenue: {
-    fontSize: 14,
-    color: theme.colors.textMuted,
-    marginBottom: 4,
-  },
-  gymAddress: {
-    fontSize: 14,
-    color: theme.colors.textMuted,
-  },
-  emptyState: {
-    padding: 40,
-    alignItems: 'center',
-  },
-  emptyText: {
-    fontSize: 16,
-    color: theme.colors.textMuted,
-    textAlign: 'center',
-  },
-});
+function createSelectGymStyles(theme: any) {
+  return StyleSheet.create({
+    container: { flex: 1 },
+    contentContainer: { padding: 24, paddingTop: 60 },
+    loadingContainer: { flex: 1, justifyContent: 'center', alignItems: 'center' },
+    header: { marginBottom: 24 },
+    title: { fontSize: 32, fontWeight: '700', marginBottom: 8 },
+    subtitle: { fontSize: 16 },
+    gymCard: { marginBottom: 12 },
+    gymName: { fontSize: 18, fontWeight: '700', marginBottom: 8 },
+    gymVenue: { fontSize: 14, marginBottom: 4 },
+    gymAddress: { fontSize: 14 },
+    emptyState: { padding: 40, alignItems: 'center' },
+    emptyText: { fontSize: 16, textAlign: 'center' },
+  });
+}

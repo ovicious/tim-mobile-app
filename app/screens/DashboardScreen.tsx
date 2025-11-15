@@ -2,7 +2,9 @@ import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { theme } from '../theme';
+import { useThemeColors } from '../theme';
+import { createSharedStyles } from '../styles/sharedStyles';
+import { Card, Button } from '../components';
 
 type RootStackParamList = {
   Home: undefined;
@@ -13,53 +15,72 @@ type RootStackParamList = {
 
 export default function DashboardScreen() {
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
+  const { theme } = useThemeColors();
+
+  const sharedStyles = React.useMemo(() => createSharedStyles(theme), [theme]);
+
+  const styles = React.useMemo(() =>
+    StyleSheet.create({
+      container: {
+        flex: 1,
+        backgroundColor: theme.colors.background,
+        padding: 16,
+        justifyContent: 'center',
+      },
+      title: {
+        fontSize: 28,
+        fontWeight: 'bold',
+        marginBottom: 32,
+        color: theme.colors.text,
+        textAlign: 'center',
+      },
+      cardContent: {
+        alignItems: 'center',
+        gap: 8,
+      },
+      cardText: {
+        fontSize: 18,
+        color: theme.colors.primary,
+        fontWeight: '500',
+      },
+    }),
+    [theme]
+  );
+
+  const handleNavigate = (screen: keyof RootStackParamList) => {
+    navigation.navigate(screen);
+  };
+
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Welcome to Your Gym Dashboard</Text>
-  <TouchableOpacity style={styles.card} onPress={() => navigation.navigate('Profile')}>
-        <Text style={styles.cardText}>Profile</Text>
-      </TouchableOpacity>
-  <TouchableOpacity style={styles.card} onPress={() => navigation.navigate('Classes')}>
-        <Text style={styles.cardText}>Book a Class</Text>
-      </TouchableOpacity>
-  <TouchableOpacity style={styles.card} onPress={() => navigation.navigate('Trainers')}>
-        <Text style={styles.cardText}>Trainers</Text>
-      </TouchableOpacity>
+
+      <Card theme={theme} style={{ marginVertical: 12 }}>
+        <TouchableOpacity
+          onPress={() => handleNavigate('Profile')}
+          style={styles.cardContent}
+        >
+          <Text style={styles.cardText}>👤 Profile</Text>
+        </TouchableOpacity>
+      </Card>
+
+      <Card theme={theme} style={{ marginVertical: 12 }}>
+        <TouchableOpacity
+          onPress={() => handleNavigate('Classes')}
+          style={styles.cardContent}
+        >
+          <Text style={styles.cardText}>📚 Book a Class</Text>
+        </TouchableOpacity>
+      </Card>
+
+      <Card theme={theme} style={{ marginVertical: 12 }}>
+        <TouchableOpacity
+          onPress={() => handleNavigate('Trainers')}
+          style={styles.cardContent}
+        >
+          <Text style={styles.cardText}>🏋️ Trainers</Text>
+        </TouchableOpacity>
+      </Card>
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: theme.colors.background,
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: 16,
-  },
-  title: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    marginBottom: 32,
-    color: theme.colors.text,
-  },
-  card: {
-    backgroundColor: theme.colors.surface,
-    borderRadius: 12,
-    padding: 24,
-    marginVertical: 12,
-    width: '80%',
-    alignItems: 'center',
-    elevation: 2,
-    shadowColor: '#000',
-    shadowOpacity: 0.3,
-    shadowRadius: 4,
-    borderWidth: 1,
-    borderColor: theme.colors.border,
-  },
-  cardText: {
-    fontSize: 18,
-    color: theme.colors.primary,
-    fontWeight: '500',
-  },
-});

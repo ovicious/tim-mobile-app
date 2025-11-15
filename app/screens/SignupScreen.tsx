@@ -1,13 +1,19 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, ScrollView, Alert, ActivityIndicator } from 'react-native';
-import { theme } from '../theme';
+import { useThemeColors } from '../theme';
+import { createSharedStyles } from '../styles/sharedStyles';
+import { Button } from '../components';
 import { API_BASE_URL } from '../api';
 
 export default function SignupScreen({ navigation }: any) {
+  const { theme } = useThemeColors();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [loading, setLoading] = useState(false);
+
+  const sharedStyles = useMemo(() => createSharedStyles(theme), [theme]);
+  const styles = useMemo(() => createSignupStyles(theme), [theme]);
 
   const handleSignup = async () => {
     // Validation
@@ -65,16 +71,16 @@ export default function SignupScreen({ navigation }: any) {
   };
 
   return (
-    <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer}>
+    <ScrollView style={[styles.container, { backgroundColor: theme.colors.background }]} contentContainerStyle={styles.contentContainer}>
       <View style={styles.header}>
-        <Text style={styles.title}>Create Account</Text>
-        <Text style={styles.subtitle}>Sign up to get started</Text>
+        <Text style={[styles.title, { color: theme.colors.text }]}>Create Account</Text>
+        <Text style={[styles.subtitle, { color: theme.colors.textMuted }]}>Sign up to get started</Text>
       </View>
 
       <View style={styles.form}>
-        <Text style={styles.label}>Email Address</Text>
+        <Text style={[styles.label, { color: theme.colors.text }]}>Email Address</Text>
         <TextInput
-          style={styles.input}
+          style={[sharedStyles.input, { color: theme.colors.text, borderColor: theme.colors.secondary }]}
           placeholder="Enter your email"
           placeholderTextColor={theme.colors.textMuted}
           value={email}
@@ -84,9 +90,9 @@ export default function SignupScreen({ navigation }: any) {
           autoCorrect={false}
         />
 
-        <Text style={styles.label}>Password</Text>
+        <Text style={[styles.label, { color: theme.colors.text }]}>Password</Text>
         <TextInput
-          style={styles.input}
+          style={[sharedStyles.input, { color: theme.colors.text, borderColor: theme.colors.secondary }]}
           placeholder="At least 8 characters"
           placeholderTextColor={theme.colors.textMuted}
           value={password}
@@ -95,9 +101,9 @@ export default function SignupScreen({ navigation }: any) {
           autoCapitalize="none"
         />
 
-        <Text style={styles.label}>Confirm Password</Text>
+        <Text style={[styles.label, { color: theme.colors.text }]}>Confirm Password</Text>
         <TextInput
-          style={styles.input}
+          style={[sharedStyles.input, { color: theme.colors.text, borderColor: theme.colors.secondary, marginBottom: 20 }]}
           placeholder="Re-enter your password"
           placeholderTextColor={theme.colors.textMuted}
           value={confirmPassword}
@@ -106,22 +112,20 @@ export default function SignupScreen({ navigation }: any) {
           autoCapitalize="none"
         />
 
-        <TouchableOpacity
-          style={[styles.button, loading && styles.buttonDisabled]}
+        <Button
+          theme={theme}
+          title={loading ? 'Signing up...' : 'Sign Up'}
           onPress={handleSignup}
           disabled={loading}
-        >
-          {loading ? (
-            <ActivityIndicator color="#fff" />
-          ) : (
-            <Text style={styles.buttonText}>Sign Up</Text>
-          )}
-        </TouchableOpacity>
+          loading={loading}
+          variant="primary"
+          fullWidth
+        />
 
         <View style={styles.footer}>
-          <Text style={styles.footerText}>Already have an account? </Text>
+          <Text style={[styles.footerText, { color: theme.colors.textMuted }]}>Already have an account? </Text>
           <TouchableOpacity onPress={() => navigation.navigate('Login')}>
-            <Text style={styles.link}>Log In</Text>
+            <Text style={[styles.link, { color: theme.colors.primary }]}>Log In</Text>
           </TouchableOpacity>
         </View>
       </View>
@@ -129,75 +133,48 @@ export default function SignupScreen({ navigation }: any) {
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: theme.colors.background,
-  },
-  contentContainer: {
-    padding: 24,
-    paddingTop: 60,
-  },
-  header: {
-    marginBottom: 40,
-  },
-  title: {
-    fontSize: 32,
-    fontWeight: '700',
-    color: theme.colors.text,
-    marginBottom: 8,
-  },
-  subtitle: {
-    fontSize: 16,
-    color: theme.colors.textMuted,
-  },
-  form: {
-    gap: 16,
-  },
-  label: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: theme.colors.text,
-    marginBottom: 8,
-  },
-  input: {
-    backgroundColor: theme.colors.surface,
-    borderWidth: 1,
-    borderColor: theme.colors.border,
-    borderRadius: 12,
-    padding: 16,
-    fontSize: 16,
-    color: theme.colors.text,
-    marginBottom: 16,
-  },
-  button: {
-    backgroundColor: theme.colors.primary,
-    padding: 16,
-    borderRadius: 12,
-    alignItems: 'center',
-    marginTop: 8,
-  },
-  buttonDisabled: {
-    opacity: 0.6,
-  },
-  buttonText: {
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: '700',
-  },
-  footer: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginTop: 24,
-  },
-  footerText: {
-    color: theme.colors.textMuted,
-    fontSize: 14,
-  },
-  link: {
-    color: theme.colors.primary,
-    fontSize: 14,
-    fontWeight: '600',
-  },
-});
+function createSignupStyles(theme: any) {
+  return StyleSheet.create({
+    container: {
+      flex: 1,
+    },
+    contentContainer: {
+      padding: 24,
+      paddingTop: 60,
+    },
+    header: {
+      marginBottom: 40,
+    },
+    title: {
+      fontSize: 32,
+      fontWeight: '700',
+      marginBottom: 8,
+    },
+    subtitle: {
+      fontSize: 16,
+    },
+    form: {
+      gap: 16,
+    },
+    label: {
+      fontSize: 14,
+      fontWeight: '600',
+      marginBottom: 8,
+    },
+    footer: {
+      flexDirection: 'row',
+      justifyContent: 'center',
+      alignItems: 'center',
+      marginTop: 24,
+    },
+    footerText: {
+      fontSize: 14,
+    },
+    link: {
+      fontSize: 14,
+      fontWeight: '600',
+    },
+  });
+}
+
+

@@ -1,9 +1,11 @@
-import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, FlatList, TouchableOpacity, ActivityIndicator } from 'react-native';
+import React, { useEffect, useState, useMemo } from 'react';
+import { View, Text, StyleSheet, FlatList, ActivityIndicator } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
-import { Ionicons } from '@expo/vector-icons';
+import { MaterialIcons } from '@expo/vector-icons';
 import { getProfile } from '../api';
 import { useThemeColors } from '../theme';
+import { createSharedStyles } from '../styles/sharedStyles';
+import { Card } from '../components';
 import { useAuth } from '../auth';
 
 // Minimal shape for gyms the user belongs to
@@ -22,6 +24,9 @@ export default function NewBookingScreen() {
   const navigation = useNavigation<any>();
   const [gyms, setGyms] = useState<UserGym[]>([]);
   const [loading, setLoading] = useState(true);
+
+  const sharedStyles = useMemo(() => createSharedStyles(theme), [theme]);
+  const styles = useMemo(() => createNewBookingStyles(theme), [theme]);
 
   useEffect(() => {
     async function load() {
@@ -49,7 +54,7 @@ export default function NewBookingScreen() {
     load();
   }, []);
 
-  if (loading) return <ActivityIndicator style={{ flex: 1, backgroundColor: theme.colors.background }} color={theme.colors.primary} size="large" />;
+  if (loading) return <ActivityIndicator style={[styles.container, { backgroundColor: theme.colors.background }]} color={theme.colors.primary} size="large" />;
 
   return (
     <View style={[styles.container, { backgroundColor: theme.colors.background }]}>
@@ -57,29 +62,35 @@ export default function NewBookingScreen() {
       <FlatList
         data={gyms}
         keyExtractor={(g) => g.business_id}
-        ListEmptyComponent={<Text style={{ color: theme.colors.textMuted, alignSelf: 'center', marginTop: 20 }}>No gyms found.</Text>}
+        scrollEnabled={false}
+        ListEmptyComponent={<Text style={[styles.emptyText, { color: theme.colors.textMuted }]}>No gyms found.</Text>}
         renderItem={({ item }) => (
-          <TouchableOpacity
-            style={[styles.card, { backgroundColor: theme.colors.surface, borderColor: theme.colors.border }]}
+          <Card
+            theme={theme}
+            variant="default"
+            style={styles.card}
             onPress={() => navigation.navigate('BookClass', { businessId: item.business_id })}
           >
             <View style={[styles.logoCircle, { backgroundColor: theme.colors.primary }]}>
               <Text style={styles.logoText}>{initialsFromName(item.name)}</Text>
             </View>
             <Text style={[styles.cardText, { color: theme.colors.text }]}>{item.name}</Text>
-            <Ionicons name="chevron-forward" size={22} color={theme.colors.textMuted} />
-          </TouchableOpacity>
+            <MaterialIcons name="chevron-right" size={22} color={theme.colors.textMuted} />
+          </Card>
         )}
       />
     </View>
   );
 }
 
-const styles = StyleSheet.create({
-  container: { flex: 1, padding: 16 },
-  title: { fontSize: 18, fontWeight: '700', alignSelf: 'center', marginBottom: 12 },
-  card: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', padding: 16, borderRadius: 12, borderWidth: 1, marginVertical: 8 },
-  logoCircle: { width: 40, height: 40, borderRadius: 20, alignItems: 'center', justifyContent: 'center', marginRight: 12 },
-  logoText: { color: '#fff', fontWeight: '800' },
-  cardText: { fontSize: 16, fontWeight: '600', marginLeft: 10, flex: 1 },
-});
+function createNewBookingStyles(theme: any) {
+  return StyleSheet.create({
+    container: { flex: 1, padding: 16 },
+    title: { fontSize: 18, fontWeight: '700', alignSelf: 'center', marginBottom: 12 },
+    card: { flexDirection: 'row', alignItems: 'center', paddingVertical: 12, paddingHorizontal: 16, marginBottom: 12 },
+    logoCircle: { width: 40, height: 40, borderRadius: 20, justifyContent: 'center', alignItems: 'center', marginRight: 12 },
+    logoText: { color: '#fff', fontWeight: '700', fontSize: 14 },
+    cardText: { flex: 1, fontSize: 16, fontWeight: '600' },
+    emptyText: { textAlign: 'center', marginTop: 20, fontSize: 16 },
+  });
+}

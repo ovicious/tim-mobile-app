@@ -2,7 +2,7 @@
 
 .PHONY: help start android ios web install lint stop clean \
 	logs-android logs-expo adb-devices adb-reverse metro-status env-print \
-	api-login ip info expo-lan expo-tunnel expo-reset ping
+	api-login ip info expo-lan expo-tunnel expo-reset ping cache-clear cache-reset expo-clear
 
 help:
 	@echo "Targets:"
@@ -53,6 +53,22 @@ stop:
 
 clean:
 	rm -rf node_modules .expo .expo-shared
+
+# Lightweight cache purge & restart (retain node_modules)
+cache-clear:
+	@echo "Clearing Expo/Metro caches (retain node_modules)"
+	rm -rf .expo .expo-shared
+	find . -name "packager-info.json" -delete 2>/dev/null || true
+	EXPO_DEBUG=0 npx expo start --clear
+
+# Full reset including dependencies
+cache-reset:
+	@echo "Full cache & dependency reset"
+	rm -rf node_modules .expo .expo-shared dist
+	npm install
+	EXPO_DEBUG=0 npx expo start --clear
+
+expo-clear: cache-clear
 
 # --- Diagnostics & Logs ---
 
@@ -112,6 +128,9 @@ ip:
 expo-lan:
 	npx expo start --lan
 
+	@echo "  make cache-clear - Purge Expo caches & restart (fast)"
+	@echo "  make cache-reset - Full reset incl. node_modules"
+	@echo "  make expo-clear  - Alias for cache-clear"
 # Start Expo with tunnel (useful when LAN discovery fails)
 expo-tunnel:
 	npx expo start --tunnel

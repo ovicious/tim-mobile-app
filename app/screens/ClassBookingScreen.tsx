@@ -27,11 +27,24 @@ export default function ClassBookingScreen() {
       try {
         const routeBusinessId = route?.params?.businessId as string | undefined;
         const profile = !routeBusinessId ? await getProfile() : null;
-        const bid = routeBusinessId || profile?.data?.business_id || profile?.business_id;
+        // Prefer route param; else try profile.data.business_id; else first active business from businesses[]
+        let bid = routeBusinessId || profile?.data?.business_id || profile?.business_id;
+        if (!bid) {
+          const businesses: any[] = profile?.data?.businesses || profile?.businesses || [];
+          const pick = businesses.find((b: any) => /(active|approved)/i.test(b?.membership_status || b?.status || '')) || businesses[0];
+          bid = pick?.business_id || pick?.id;
+        }
         setBusinessId(bid);
         if (bid) {
           const cls = await getClassesForBusiness(bid);
-          setClasses(cls?.data || cls);
+          // Backend wraps in { success, message, data: { business, classes, count } }
+          const rawClasses = cls?.data?.classes || cls?.classes || cls?.data || cls || [];
+          const normalized: GymClass[] = (rawClasses as any[]).map((c: any) => ({
+            id: c.id || c.class_id || c.classId,
+            name: c.name,
+            description: c.description,
+          })).filter((c: GymClass) => !!c.id && !!c.name);
+          setClasses(normalized);
         }
       } catch (e) {
         const err: any = e;
@@ -40,6 +53,7 @@ export default function ClassBookingScreen() {
           await logout();
           return;
         }
+        console.warn('Failed loading classes:', e);
       } finally {
         setLoading(false);
       }
@@ -75,7 +89,14 @@ export default function ClassBookingScreen() {
         const results = await Promise.all(
           missing.map(async (c) => {
             const res = await getSessionsForClass(businessId, c.id);
-            const arr: Session[] = res?.data || res || [];
+            // Backend wraps in { data: { class, sessions, count } }
+            const raw = res?.data?.sessions || res?.sessions || res?.data || res || [];
+            const arr: Session[] = (raw as any[]).map((s: any) => ({
+              id: s.id || s.session_id || s.sessionId,
+              start_time: s.start_time || s.startTime,
+              end_time: s.end_time || s.endTime,
+              available_slots: s.available_slots ?? s.available_spots,
+            })).filter((s: Session) => !!s.id && !!s.start_time);
             return [c.id, arr] as const;
           })
         );
@@ -101,13 +122,21 @@ export default function ClassBookingScreen() {
     if (!sessionsByClass[classId]) {
       try {
         const sessions = await getSessionsForClass(businessId, classId);
-        setSessionsByClass(prev => ({ ...prev, [classId]: sessions?.data || sessions }));
+        const raw = sessions?.data?.sessions || sessions?.sessions || sessions?.data || sessions || [];
+        const normalized: Session[] = (raw as any[]).map((s: any) => ({
+          id: s.id || s.session_id || s.sessionId,
+          start_time: s.start_time || s.startTime,
+          end_time: s.end_time || s.endTime,
+          available_slots: s.available_slots ?? s.available_spots,
+        })).filter((s: Session) => !!s.id && !!s.start_time);
+        setSessionsByClass(prev => ({ ...prev, [classId]: normalized }));
       } catch (e: any) {
         if (e?.code === 401) {
           alert('Your session expired. Please log in again.');
           await logout();
           return;
         }
+        console.warn('Failed loading sessions for class', classId, e);
       }
     }
   };

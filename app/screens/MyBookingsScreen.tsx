@@ -3,6 +3,8 @@ import { View, Text, StyleSheet, FlatList, TouchableOpacity, ActivityIndicator, 
 import { Ionicons } from '@expo/vector-icons';
 import { getProfile, getMyBookings, cancelBooking } from '../api';
 import { useThemeColors } from '../theme';
+import { createSharedStyles } from '../styles/sharedStyles';
+import { Card, Badge } from '../components';
 
 type Booking = {
   id: string;
@@ -109,7 +111,7 @@ export default function MyBookingsScreen() {
                     <Text style={[styles.meta, { color: theme.colors.text }]}>{new Date(b.start_time||'').toLocaleString()}</Text>
                   </View>
                 </View>
-                <TouchableOpacity style={[styles.cancelBtn, { backgroundColor: theme.colors.danger }]} onPress={() => onCancel(b)} disabled={working === b.id}>
+                <TouchableOpacity style={[styles.cancelBtn, { backgroundColor: theme.colors.error }]} onPress={() => onCancel(b)} disabled={working === b.id}>
                   <Text style={styles.cancelText}>{working === b.id ? 'Cancelling…' : 'Cancel'}</Text>
                 </TouchableOpacity>
               </View>

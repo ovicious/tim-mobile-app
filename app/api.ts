@@ -2,7 +2,7 @@
 import { Platform } from 'react-native';
 import { getStoredToken } from './auth';
 
-export const API_BASE_URL = process.env.EXPO_PUBLIC_API_BASE_URL || process.env.API_BASE_URL || 'https://nzxf0l1n9b.execute-api.eu-central-1.amazonaws.com/dev';
+export const API_BASE_URL = process.env.EXPO_PUBLIC_API_BASE_URL || process.env.API_BASE_URL || 'https://51vjye6t5m.execute-api.eu-central-1.amazonaws.com/dev';
 const API_TOKEN = process.env.API_TOKEN;
 
 console.log('API_BASE_URL configured as:', API_BASE_URL);

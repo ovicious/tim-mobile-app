@@ -1,6 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, ActivityIndicator, Alert } from 'react-native';
 import { useThemeColors } from '../theme';
+import { createSharedStyles } from '../styles/sharedStyles';
+import { Button } from '../components';
 import { apiPost } from '../api';
 import { useAuth } from '../auth';
 
@@ -10,6 +12,9 @@ export default function LoginScreen({ navigation }: any) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
+
+  const sharedStyles = useMemo(() => createSharedStyles(theme), [theme]);
+  const styles = useMemo(() => createLoginStyles(theme), [theme]);
 
   const onSubmit = async () => {
     if (!email || !password) {
@@ -51,29 +56,37 @@ export default function LoginScreen({ navigation }: any) {
     } finally {
       setLoading(false);
     }
-  };  return (
+  };
+
+  return (
     <View style={[styles.containerBase, { backgroundColor: theme.colors.background }]}>
       <Text style={[styles.title, { color: theme.colors.text }]}>Sign in</Text>
       <TextInput
-        style={[styles.input, { backgroundColor: theme.colors.inputBg, color: theme.colors.text, borderColor: theme.colors.inputBorder }]}
+        style={[sharedStyles.input, { color: theme.colors.text, borderColor: theme.colors.secondary }]}
         placeholder="Email"
         autoCapitalize="none"
         keyboardType="email-address"
         value={email}
         onChangeText={setEmail}
-        placeholderTextColor={theme.colors.placeholder}
+        placeholderTextColor={theme.colors.textMuted}
       />
       <TextInput
-        style={[styles.input, { backgroundColor: theme.colors.inputBg, color: theme.colors.text, borderColor: theme.colors.inputBorder }]}
+        style={[sharedStyles.input, { color: theme.colors.text, borderColor: theme.colors.secondary, marginBottom: 20 }]}
         placeholder="Password"
         secureTextEntry
         value={password}
         onChangeText={setPassword}
-        placeholderTextColor={theme.colors.placeholder}
+        placeholderTextColor={theme.colors.textMuted}
       />
-      <TouchableOpacity style={[styles.button, { backgroundColor: theme.colors.primary }]} onPress={onSubmit} disabled={loading}>
-        {loading ? <ActivityIndicator color="#fff" /> : <Text style={styles.buttonText}>Login</Text>}
-      </TouchableOpacity>
+      <Button
+        theme={theme}
+        title={loading ? 'Logging in...' : 'Login'}
+        onPress={onSubmit}
+        disabled={loading}
+        loading={loading}
+        variant="primary"
+        fullWidth
+      />
       
       <TouchableOpacity style={styles.signupLink} onPress={() => navigation.navigate('Signup')}>
         <Text style={[styles.signupText, { color: theme.colors.textMuted }]}>Don't have an account? <Text style={[styles.signupBold, { color: theme.colors.primary }]}>Sign up</Text></Text>
@@ -82,13 +95,12 @@ export default function LoginScreen({ navigation }: any) {
   );
 }
 
-const styles = StyleSheet.create({
-  containerBase: { flex: 1, padding: 16, justifyContent: 'center' },
-  title: { fontSize: 24, fontWeight: '700', textAlign: 'center', marginBottom: 24 },
-  input: { borderRadius: 10, paddingHorizontal: 14, paddingVertical: 12, marginBottom: 12, borderWidth: 1 },
-  button: { borderRadius: 10, paddingVertical: 12, alignItems: 'center', marginTop: 4 },
-  buttonText: { color: '#fff', fontWeight: '700', fontSize: 16 },
-  signupLink: { marginTop: 20, alignItems: 'center' },
-  signupText: { fontSize: 14 },
-  signupBold: { fontWeight: '700' },
-});
+function createLoginStyles(theme: any) {
+  return StyleSheet.create({
+    containerBase: { flex: 1, padding: 16, justifyContent: 'center' },
+    title: { fontSize: 24, fontWeight: '700', textAlign: 'center', marginBottom: 24 },
+    signupLink: { marginTop: 20, alignItems: 'center' },
+    signupText: { fontSize: 14 },
+    signupBold: { fontWeight: '700' },
+  });
+}
