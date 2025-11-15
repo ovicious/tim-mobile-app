@@ -24,11 +24,13 @@ import { AuthProvider, useAuth } from './auth';
 import { DeviceUiProvider } from './device-ui';
 import { useThemeColors } from './theme';
 import { getProfile } from './api';
+import { logger } from './utils/logger';
 
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
 
 function Tabs() {
+  logger.debug('Tabs', 'Initializing tab navigation');
   const insets = useSafeAreaInsets();
   const { theme } = useThemeColors();
   const [userInfo, setUserInfo] = useState<{ firstName: string; gymName: string } | null>(null);
@@ -36,13 +38,17 @@ function Tabs() {
   useEffect(() => {
     async function loadUserInfo() {
       try {
+        logger.debug('Tabs', 'Loading user info');
         const profile = await getProfile();
         const data = profile?.data ?? profile;
-        setUserInfo({
+        const info = {
           firstName: data?.first_name || 'Profile',
           gymName: data?.business_name || data?.business_id?.substring(0, 8) || 'Gym',
-        });
+        };
+        logger.info('Tabs', 'User info loaded', { firstName: info.firstName, gymName: info.gymName });
+        setUserInfo(info);
       } catch (e) {
+        logger.warn('Tabs', 'Failed to load user info, using defaults', e);
         setUserInfo({ firstName: 'Profile', gymName: 'Gym' });
       }
     }
@@ -98,7 +104,28 @@ function Tabs() {
 }
 
 export default function AppNavigation() {
+  return (
+    <AuthProvider>
+      <SafeAreaProvider>
+        <DeviceUiProvider>
+          <NavigationContent />
+        </DeviceUiProvider>
+      </SafeAreaProvider>
+    </AuthProvider>
+  );
+}
+
+function NavigationContent() {
+  logger.debug('NavigationContent', 'Initializing navigation with theme');
   const { theme, isDarkMode } = useThemeColors();
+
+  if (!theme || !theme.colors) {
+    logger.error('NavigationContent', 'Theme is undefined or missing colors');
+    return null; // Don't render if theme is unavailable
+  }
+
+  logger.debug('NavigationContent', 'Theme loaded successfully', { isDarkMode });
+
   const baseNav = isDarkMode ? NavDarkTheme : NavLightTheme;
   const navTheme: Theme = {
     ...baseNav,
@@ -111,12 +138,18 @@ export default function AppNavigation() {
       border: theme.colors.border,
     },
   };
+
   function RootNavigator() {
     const { token, loading } = useAuth();
     const insets = useSafeAreaInsets();
-    
-    if (loading) return null;
+
+    if (loading) {
+      logger.debug('RootNavigator', 'Auth loading...');
+      return null;
+    }
+
     if (!token) {
+      logger.debug('RootNavigator', 'No token, showing auth screens');
       return (
         <Stack.Navigator id={undefined}>
           <Stack.Screen name="Login" component={LoginScreen} options={{ headerShown: false }} />
@@ -128,6 +161,8 @@ export default function AppNavigation() {
         </Stack.Navigator>
       );
     }
+
+    logger.debug('RootNavigator', 'Token found, showing main app');
     return (
       <View style={{ flex: 1, paddingTop: insets.top }}>
         <Stack.Navigator
@@ -147,15 +182,9 @@ export default function AppNavigation() {
   }
 
   return (
-    <AuthProvider>
-      <SafeAreaProvider>
-        <DeviceUiProvider>
-          <NavigationContainer theme={navTheme}>
-            <StatusBar style={isDarkMode ? 'light' : 'dark'} backgroundColor={theme.colors.background} />
-            <RootNavigator />
-          </NavigationContainer>
-        </DeviceUiProvider>
-      </SafeAreaProvider>
-    </AuthProvider>
+    <NavigationContainer theme={navTheme}>
+      <StatusBar style={isDarkMode ? 'light' : 'dark'} backgroundColor={theme.colors.background} />
+      <RootNavigator />
+    </NavigationContainer>
   );
 }

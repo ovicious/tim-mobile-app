@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useMemo } from 'react';
 import { Platform } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { logger } from './utils/logger';
 
 export type DeviceUi = {
   isGestureNavigation: boolean;
@@ -31,7 +32,12 @@ export function DeviceUiProvider({ children }: { children: React.ReactNode }) {
 
   // One-time log to help diagnostics
   React.useEffect(() => {
-    console.log('[DeviceUI] bottomInset=', insets.bottom, ' isGestureNavigation=', value.isGestureNavigation, ' hasSoftKeys=', value.hasSoftKeys);
+    logger.debug('DeviceUI', 'Device configuration', {
+      bottomInset: insets.bottom,
+      isGestureNavigation: value.isGestureNavigation,
+      hasSoftKeys: value.hasSoftKeys,
+      platform: Platform.OS,
+    });
   }, [insets.bottom, value.isGestureNavigation, value.hasSoftKeys]);
 
   return <DeviceUiContext.Provider value={value}>{children}</DeviceUiContext.Provider>;
