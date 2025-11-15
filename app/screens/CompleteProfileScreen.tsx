@@ -1,17 +1,24 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, ScrollView, Alert, ActivityIndicator } from 'react-native';
-import { theme } from '../theme';
+import { MaterialIcons } from '@expo/vector-icons';
+import { useThemeColors } from '../theme';
+import { createSharedStyles } from '../styles/sharedStyles';
+import { Button, Card } from '../components';
 import { API_BASE_URL } from '../api';
 import { storeToken } from '../auth';
 
 export default function CompleteProfileScreen({ route, navigation }: any) {
   const { email } = route.params;
+  const { theme } = useThemeColors();
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
   const [dateOfBirth, setDateOfBirth] = useState('');
   const [gender, setGender] = useState<'male' | 'female' | 'other' | ''>('');
   const [weight, setWeight] = useState('');
   const [loading, setLoading] = useState(false);
+
+  const sharedStyles = useMemo(() => createSharedStyles(theme), [theme]);
+  const styles = useMemo(() => createCompleteProfileStyles(theme), [theme]);
 
   const handleComplete = async () => {
     // Validation
@@ -94,16 +101,20 @@ export default function CompleteProfileScreen({ route, navigation }: any) {
   };
 
   return (
-    <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer}>
+    <ScrollView 
+      style={[styles.container, { backgroundColor: theme.colors.background }]} 
+      contentContainerStyle={styles.contentContainer}
+      showsVerticalScrollIndicator={false}
+    >
       <View style={styles.header}>
-        <Text style={styles.title}>Complete Profile</Text>
-        <Text style={styles.subtitle}>Tell us about yourself</Text>
+        <Text style={[styles.title, { color: theme.colors.text }]}>Complete Profile</Text>
+        <Text style={[styles.subtitle, { color: theme.colors.textMuted }]}>Tell us about yourself</Text>
       </View>
 
       <View style={styles.form}>
-        <Text style={styles.label}>First Name *</Text>
+        <Text style={[styles.label, { color: theme.colors.text }]}>First Name *</Text>
         <TextInput
-          style={styles.input}
+          style={[sharedStyles.input, { color: theme.colors.text, borderColor: theme.colors.secondary }]}
           placeholder="Enter your first name"
           placeholderTextColor={theme.colors.textMuted}
           value={firstName}
@@ -111,9 +122,9 @@ export default function CompleteProfileScreen({ route, navigation }: any) {
           autoCapitalize="words"
         />
 
-        <Text style={styles.label}>Last Name *</Text>
+        <Text style={[styles.label, { color: theme.colors.text }]}>Last Name *</Text>
         <TextInput
-          style={styles.input}
+          style={[sharedStyles.input, { color: theme.colors.text, borderColor: theme.colors.secondary }]}
           placeholder="Enter your last name"
           placeholderTextColor={theme.colors.textMuted}
           value={lastName}
@@ -121,9 +132,9 @@ export default function CompleteProfileScreen({ route, navigation }: any) {
           autoCapitalize="words"
         />
 
-        <Text style={styles.label}>Date of Birth * (YYYY-MM-DD)</Text>
+        <Text style={[styles.label, { color: theme.colors.text }]}>Date of Birth * (YYYY-MM-DD)</Text>
         <TextInput
-          style={styles.input}
+          style={[sharedStyles.input, { color: theme.colors.text, borderColor: theme.colors.secondary }]}
           placeholder="e.g., 1990-01-31"
           placeholderTextColor={theme.colors.textMuted}
           value={dateOfBirth}
@@ -131,31 +142,49 @@ export default function CompleteProfileScreen({ route, navigation }: any) {
           keyboardType="numbers-and-punctuation"
         />
 
-        <Text style={styles.label}>Gender *</Text>
+        <Text style={[styles.label, { color: theme.colors.text }]}>Gender *</Text>
         <View style={styles.genderContainer}>
           <TouchableOpacity
-            style={[styles.genderButton, gender === 'male' && styles.genderButtonActive]}
+            style={[
+              styles.genderButton,
+              { borderColor: theme.colors.secondary },
+              gender === 'male' && { borderColor: theme.colors.primary, backgroundColor: theme.colors.primary }
+            ]}
             onPress={() => setGender('male')}
           >
-            <Text style={[styles.genderText, gender === 'male' && styles.genderTextActive]}>Male</Text>
+            <Text style={[styles.genderText, gender === 'male' && { color: '#fff' }, gender !== 'male' && { color: theme.colors.text }]}>
+              Male
+            </Text>
           </TouchableOpacity>
           <TouchableOpacity
-            style={[styles.genderButton, gender === 'female' && styles.genderButtonActive]}
+            style={[
+              styles.genderButton,
+              { borderColor: theme.colors.secondary },
+              gender === 'female' && { borderColor: theme.colors.primary, backgroundColor: theme.colors.primary }
+            ]}
             onPress={() => setGender('female')}
           >
-            <Text style={[styles.genderText, gender === 'female' && styles.genderTextActive]}>Female</Text>
+            <Text style={[styles.genderText, gender === 'female' && { color: '#fff' }, gender !== 'female' && { color: theme.colors.text }]}>
+              Female
+            </Text>
           </TouchableOpacity>
           <TouchableOpacity
-            style={[styles.genderButton, gender === 'other' && styles.genderButtonActive]}
+            style={[
+              styles.genderButton,
+              { borderColor: theme.colors.secondary },
+              gender === 'other' && { borderColor: theme.colors.primary, backgroundColor: theme.colors.primary }
+            ]}
             onPress={() => setGender('other')}
           >
-            <Text style={[styles.genderText, gender === 'other' && styles.genderTextActive]}>Other</Text>
+            <Text style={[styles.genderText, gender === 'other' && { color: '#fff' }, gender !== 'other' && { color: theme.colors.text }]}>
+              Other
+            </Text>
           </TouchableOpacity>
         </View>
 
-        <Text style={styles.label}>Weight (kg) - Optional</Text>
+        <Text style={[styles.label, { color: theme.colors.text }]}>Weight (kg) - Optional</Text>
         <TextInput
-          style={styles.input}
+          style={[sharedStyles.input, { color: theme.colors.text, borderColor: theme.colors.secondary }]}
           placeholder="Enter your weight"
           placeholderTextColor={theme.colors.textMuted}
           value={weight}
@@ -163,114 +192,31 @@ export default function CompleteProfileScreen({ route, navigation }: any) {
           keyboardType="decimal-pad"
         />
 
-        <TouchableOpacity
-          style={[styles.button, loading && styles.buttonDisabled]}
+        <Button
+          theme={theme}
+          title={loading ? 'Completing...' : 'Continue'}
           onPress={handleComplete}
           disabled={loading}
-        >
-          {loading ? (
-            <ActivityIndicator color="#fff" />
-          ) : (
-            <Text style={styles.buttonText}>Continue</Text>
-          )}
-        </TouchableOpacity>
+          loading={loading}
+          variant="primary"
+          fullWidth
+        />
       </View>
     </ScrollView>
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: theme.colors.background,
-  },
-  contentContainer: {
-    padding: 24,
-    paddingTop: 60,
-  },
-  header: {
-    marginBottom: 40,
-  },
-  title: {
-    fontSize: 32,
-    fontWeight: '700',
-    color: theme.colors.text,
-    marginBottom: 8,
-  },
-  subtitle: {
-    fontSize: 16,
-    color: theme.colors.textMuted,
-  },
-  form: {
-    gap: 16,
-  },
-  label: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: theme.colors.text,
-    marginBottom: 8,
-  },
-  input: {
-    backgroundColor: theme.colors.surface,
-    borderWidth: 1,
-    borderColor: theme.colors.border,
-    borderRadius: 12,
-    padding: 16,
-    fontSize: 16,
-    color: theme.colors.text,
-    marginBottom: 16,
-  },
-  genderContainer: {
-    flexDirection: 'row',
-    gap: 12,
-    marginBottom: 16,
-  },
-  genderButton: {
-    flex: 1,
-    backgroundColor: theme.colors.surface,
-    borderWidth: 1,
-    borderColor: theme.colors.border,
-    borderRadius: 12,
-    padding: 16,
-    alignItems: 'center',
-  },
-  genderButtonActive: {
-    backgroundColor: theme.colors.primary,
-    borderColor: theme.colors.primary,
-  },
-  genderText: {
-    fontSize: 16,
-    color: theme.colors.textMuted,
-    fontWeight: '600',
-  },
-  genderTextActive: {
-    color: '#fff',
-  },
-  pickerContainer: {
-    backgroundColor: theme.colors.surface,
-    borderWidth: 1,
-    borderColor: theme.colors.border,
-    borderRadius: 12,
-    marginBottom: 16,
-    overflow: 'hidden',
-  },
-  picker: {
-    color: theme.colors.text,
-    height: 50,
-  },
-  button: {
-    backgroundColor: theme.colors.primary,
-    padding: 16,
-    borderRadius: 12,
-    alignItems: 'center',
-    marginTop: 8,
-  },
-  buttonDisabled: {
-    opacity: 0.6,
-  },
-  buttonText: {
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: '700',
-  },
-});
+function createCompleteProfileStyles(theme: any) {
+  return StyleSheet.create({
+    container: { flex: 1 },
+    contentContainer: { padding: 24, paddingTop: 60 },
+    header: { marginBottom: 40 },
+    title: { fontSize: 32, fontWeight: '700', marginBottom: 8 },
+    subtitle: { fontSize: 16 },
+    form: { gap: 16 },
+    label: { fontSize: 14, fontWeight: '600', marginBottom: 8 },
+    genderContainer: { flexDirection: 'row', gap: 10, marginBottom: 16 },
+    genderButton: { flex: 1, paddingVertical: 12, borderRadius: 10, borderWidth: 2, alignItems: 'center' },
+    genderText: { fontWeight: '600', fontSize: 14 },
+  });
+}
