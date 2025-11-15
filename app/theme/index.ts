@@ -10,6 +10,7 @@ import { lightTheme } from './light';
 import { darkTheme } from './dark';
 import { Appearance, useColorScheme } from 'react-native';
 import { DarkTheme as NavDarkTheme, DefaultTheme as NavDefaultTheme } from '@react-navigation/native';
+import { logger } from '../utils/logger';
 
 // ============ THEME RETRIEVAL ============
 
@@ -18,8 +19,11 @@ import { DarkTheme as NavDarkTheme, DefaultTheme as NavDefaultTheme } from '@rea
  * @param mode - Theme mode ('light' or 'dark')
  * @returns AppTheme object
  */
-export const getTheme = (mode: ThemeMode): AppTheme => 
-  mode === 'dark' ? darkTheme : lightTheme;
+export const getTheme = (mode: ThemeMode): AppTheme => {
+  const theme = mode === 'dark' ? darkTheme : lightTheme;
+  logger.debug('getTheme', `Retrieving ${mode} theme`);
+  return theme;
+};
 
 export { lightTheme, darkTheme };
 export type { AppTheme, ThemeMode };
@@ -32,7 +36,9 @@ export type { AppTheme, ThemeMode };
  */
 export const getSystemThemeMode = (): ThemeMode => {
   const scheme = Appearance.getColorScheme();
-  return scheme === 'dark' ? 'dark' : 'light';
+  const mode = scheme === 'dark' ? 'dark' : 'light';
+  logger.debug('getSystemThemeMode', `Detected system theme: ${mode}`);
+  return mode;
 };
 
 /**
@@ -40,12 +46,32 @@ export const getSystemThemeMode = (): ThemeMode => {
  * @returns Object with theme and isDarkMode flag
  */
 export function useThemeColors(): { theme: AppTheme; isDarkMode: boolean } {
-  const schemeHook = useColorScheme();
-  const isDark = schemeHook === 'dark';
-  return { 
-    theme: isDark ? darkTheme : lightTheme, 
-    isDarkMode: isDark 
-  };
+  try {
+    const schemeHook = useColorScheme();
+    const isDark = schemeHook === 'dark';
+    const theme = isDark ? darkTheme : lightTheme;
+    
+    if (!theme || !theme.colors) {
+      logger.error('useThemeColors', 'Theme or colors is undefined', { isDark, theme: !!theme });
+      // Fallback to light theme if something goes wrong
+      return { 
+        theme: lightTheme, 
+        isDarkMode: false 
+      };
+    }
+
+    return { 
+      theme, 
+      isDarkMode: isDark 
+    };
+  } catch (error) {
+    logger.error('useThemeColors', 'Error in useThemeColors hook', error);
+    // Fallback to light theme
+    return { 
+      theme: lightTheme, 
+      isDarkMode: false 
+    };
+  }
 }
 
 // ============ REACT NAVIGATION INTEGRATION ============

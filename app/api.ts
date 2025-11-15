@@ -1,11 +1,12 @@
 // Simple API client for backend integration
 import { Platform } from 'react-native';
 import { getStoredToken } from './auth';
+import { logger } from './utils/logger';
 
 export const API_BASE_URL = process.env.EXPO_PUBLIC_API_BASE_URL || process.env.API_BASE_URL || 'https://51vjye6t5m.execute-api.eu-central-1.amazonaws.com/dev';
 const API_TOKEN = process.env.API_TOKEN;
 
-console.log('API_BASE_URL configured as:', API_BASE_URL);
+logger.debug('API', 'API_BASE_URL configured', { url: API_BASE_URL });
 
 function joinUrl(base: string, path: string) {
   const b = base.endsWith('/') ? base.slice(0, -1) : base;
@@ -32,8 +33,8 @@ export async function apiGet(path: string) {
 export async function apiPost(path: string, body: any) {
   const stored = await getStoredToken();
   const url = joinUrl(API_BASE_URL, path);
-  console.log('apiPost URL:', url);
-  console.log('apiPost body:', JSON.stringify(body));
+  logger.debug('apiPost', 'Making POST request', { url, bodyKeys: Object.keys(body) });
+  
   const res = await fetch(url, {
     method: 'POST',
     headers: {
@@ -42,23 +43,32 @@ export async function apiPost(path: string, body: any) {
     },
     body: JSON.stringify(body),
   });
+  
   const text = await res.text();
-  console.log('apiPost status:', res.status);
-  console.log('apiPost raw response:', text);
+  logger.debug('apiPost', 'Received response', { status: res.status });
+  
   let json;
   try {
     json = JSON.parse(text);
   } catch (e) {
-    console.error('API response is not valid JSON:', text);
+    logger.error('apiPost', 'Failed to parse JSON response', e);
     throw new Error('API response is not valid JSON');
   }
-  console.log('apiPost parsed response:', JSON.stringify(json, null, 2));
+  
+  logger.debug('apiPost', 'Response parsed successfully', { status: res.status });
+  
   if (res.status === 401 || res.status === 403) {
+    logger.warn('apiPost', 'Unauthorized response', { status: res.status });
     const err = new Error('Unauthorized');
     (err as any).code = 401;
     throw err;
   }
-  if (!res.ok) throw new Error(text);
+  
+  if (!res.ok) {
+    logger.error('apiPost', 'Request failed', { status: res.status, response: text });
+    throw new Error(text);
+  }
+  
   return json;
 }
 

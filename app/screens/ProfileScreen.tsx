@@ -7,6 +7,7 @@ import { Card, Button, Badge } from '../components';
 import { apiGet } from '../api';
 import { useAuth } from '../auth';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { logger } from '../utils/logger';
 
 interface MemberProfile {
   user_id: string;
@@ -37,19 +38,27 @@ export default function ProfileScreen() {
   const styles = useMemo(() => createProfileStyles(theme), [theme]);
   
   useEffect(() => {
+    logger.debug('ProfileScreen', 'Component mounted, loading profile');
+    
     apiGet('/api/v1/auth/profile')
       .then((resp) => {
         const data = resp?.data ?? resp;
+        logger.info('ProfileScreen', 'Profile loaded successfully', { userId: data?.user_id });
         setProfile(data);
       })
       .catch((e: any) => {
         if (e?.code === 401) {
+          logger.warn('ProfileScreen', 'Unauthorized, logging out');
           logout();
           return;
         }
+        logger.error('ProfileScreen', 'Failed to load profile', e);
         setProfile(null);
       })
-      .finally(() => setLoading(false));
+      .finally(() => {
+        setLoading(false);
+        logger.debug('ProfileScreen', 'Profile loading complete');
+      });
   }, []);
   
   if (loading) {

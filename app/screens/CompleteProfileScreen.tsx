@@ -5,6 +5,7 @@ import { createSharedStyles } from '../styles/sharedStyles';
 import { Button } from '../components';
 import { API_BASE_URL } from '../api';
 import { storeToken } from '../auth';
+import { logger } from '../utils/logger';
 
 export default function CompleteProfileScreen({ route, navigation }: any) {
   const { email } = route.params;
@@ -20,8 +21,11 @@ export default function CompleteProfileScreen({ route, navigation }: any) {
   const styles = useMemo(() => createCompleteProfileStyles(theme), [theme]);
 
   const handleComplete = async () => {
+    logger.debug('CompleteProfileScreen', 'User starting profile completion');
+    
     // Validation
     if (!firstName || !lastName || !dateOfBirth || !gender) {
+      logger.warn('CompleteProfileScreen', 'Validation failed: missing required fields');
       Alert.alert('Error', 'Please fill in all required fields');
       return;
     }
@@ -29,14 +33,17 @@ export default function CompleteProfileScreen({ route, navigation }: any) {
     // Validate date format (YYYY-MM-DD)
     const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
     if (!dateRegex.test(dateOfBirth)) {
+      logger.warn('CompleteProfileScreen', 'Invalid date format', { dateOfBirth });
       Alert.alert('Error', 'Date of birth must be in format YYYY-MM-DD');
       return;
     }
 
+    logger.debug('CompleteProfileScreen', 'Validation passed, submitting profile');
     setLoading(true);
 
     try {
       // First, login to get token
+      logger.debug('CompleteProfileScreen', 'Logging in user', { email });
       const loginResponse = await fetch(`${API_BASE_URL}/api/v1/auth/login`, {
         method: 'POST',
         headers: {
@@ -51,15 +58,18 @@ export default function CompleteProfileScreen({ route, navigation }: any) {
       const loginData = await loginResponse.json();
 
       if (!loginResponse.ok || !loginData.success) {
+        logger.error('CompleteProfileScreen', 'Login failed during profile completion', loginData);
         Alert.alert('Error', 'Please login first');
         navigation.replace('Login');
         return;
       }
 
+      logger.info('CompleteProfileScreen', 'Login successful');
       const token = loginData.data.token;
       await storeToken(token);
 
       // Now complete profile
+      logger.debug('CompleteProfileScreen', 'Submitting profile data');
       const response = await fetch(`${API_BASE_URL}/api/v1/auth/complete-profile`, {
         method: 'POST',
         headers: {
@@ -78,6 +88,7 @@ export default function CompleteProfileScreen({ route, navigation }: any) {
       const data = await response.json();
 
       if (response.ok && data.success) {
+        logger.info('CompleteProfileScreen', 'Profile completed successfully');
         Alert.alert(
           'Success',
           'Profile completed! Now select your gym',
@@ -89,10 +100,11 @@ export default function CompleteProfileScreen({ route, navigation }: any) {
           ]
         );
       } else {
+        logger.error('CompleteProfileScreen', 'Failed to complete profile', data);
         Alert.alert('Error', data.error || 'Failed to complete profile');
       }
     } catch (error: any) {
-      console.error('Profile completion error:', error);
+      logger.error('CompleteProfileScreen', 'Profile completion error', error);
       Alert.alert('Error', 'Network error. Please try again.');
     } finally {
       setLoading(false);
