@@ -69,7 +69,7 @@ export const Badge: React.FC<BadgeProps> = ({
       },
     };
 
-    return styles[variant];
+    return styles[variant] || styles.default;
   };
 
   const getTextColor = (): string => {
@@ -85,7 +85,7 @@ export const Badge: React.FC<BadgeProps> = ({
       info: theme.colors.info,
     };
 
-    return colors[variant];
+    return colors[variant] || colors.default;
   };
 
   const badgeStyles = StyleSheet.create({

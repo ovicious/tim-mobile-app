@@ -1,9 +1,8 @@
 import React, { useState, useMemo } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, ScrollView, Alert, ActivityIndicator } from 'react-native';
-import { MaterialIcons } from '@expo/vector-icons';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, ScrollView, Alert } from 'react-native';
 import { useThemeColors } from '../theme';
 import { createSharedStyles } from '../styles/sharedStyles';
-import { Button, Card } from '../components';
+import { Button } from '../components';
 import { API_BASE_URL } from '../api';
 import { storeToken } from '../auth';
 
