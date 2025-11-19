@@ -1,18 +1,21 @@
 # Makefile for Expo mobile app
 
-.PHONY: help start android ios web install lint stop clean \
+.PHONY: help start start-clean start-8082 android ios web install lint stop stop-expo clean \
 	logs-android logs-expo adb-devices adb-reverse metro-status env-print \
 	api-login ip info expo-lan expo-tunnel expo-reset ping cache-clear cache-reset expo-clear
 
 help:
 	@echo "Targets:"
-	@echo "  make start   - Start Expo bundler"
+		@echo "  make start   - Start Expo bundler (use PORT=8082 to set port)"
+		@echo "  make start-clean - Clear Metro cache and start (use PORT=8082)"
+		@echo "  make start-8082  - Start Expo on port 8082"
 	@echo "  make android - Run on Android emulator/device"
 	@echo "  make ios     - Run on iOS simulator/device (macOS)"
 	@echo "  make web     - Run in the browser"
 	@echo "  make install - Install dependencies"
 	@echo "  make lint    - Run ESLint"
-	@echo "  make stop    - Attempt to stop Expo bundler"
+		@echo "  make stop    - Attempt to stop Expo/Metro by process name"
+		@echo "  make stop-expo - Stop Expo/Metro and free common ports (8081,8082,19000,19001)"
 	@echo "  make clean   - Remove node_modules and Expo caches"
 	@echo "  make logs-android - Tail Android logs filtered for RN/Expo/network"
 	@echo "  make logs-expo    - Tail Expo packager info and settings"
@@ -27,8 +30,27 @@ help:
 	@echo "  make expo-reset   - Clear Metro cache and restart"
 	@echo "  make ping TARGET=IP - Ping a device on the LAN"
 
+PORT ?=
 start:
-	npm start
+	@if [ -n "$(PORT)" ]; then \
+	  echo "Starting Expo on port $(PORT)"; \
+	  npx expo start --port $(PORT); \
+	else \
+	  npm start; \
+	fi
+
+# Clear cache and start Expo; supports PORT=8082
+start-clean:
+	@echo "Clearing Metro cache and starting Expo"; \
+	if [ -n "$(PORT)" ]; then \
+	  EXPO_DEBUG=0 npx expo start --clear --port $(PORT); \
+	else \
+	  EXPO_DEBUG=0 npx expo start --clear; \
+	fi
+
+# Convenience target to start on 8082
+start-8082:
+	$(MAKE) start PORT=8082
 
 android:
 	npm run android
@@ -50,6 +72,15 @@ stop:
 	-pkill -f "expo start" || true
 	-pkill -f "node .*expo" || true
 	-pkill -f "metro" || true
+
+# More aggressive stop that also frees common ports
+stop-expo:
+	-$(MAKE) stop || true
+	-which fuser >/dev/null 2>&1 && fuser -kn tcp 8081 2>/dev/null || true
+	-which fuser >/dev/null 2>&1 && fuser -kn tcp 8082 2>/dev/null || true
+	-which fuser >/dev/null 2>&1 && fuser -kn tcp 19000 2>/dev/null || true
+	-which fuser >/dev/null 2>&1 && fuser -kn tcp 19001 2>/dev/null || true
+	-ss -lntp 2>/dev/null | grep -E ":(8081|8082|19000|19001)" || true
 
 clean:
 	rm -rf node_modules .expo .expo-shared
@@ -104,7 +135,7 @@ metro-status:
 # Print important environment variables
 env-print:
 	@echo "Environment (.env) values:"
-	@grep -E '^(API_BASE_URL|API_TOKEN)=' .env 2>/dev/null || echo "No .env or vars missing"
+	@grep -E '^(EXPO_PUBLIC_API_BASE_URL|API_TOKEN)=' .env 2>/dev/null || echo "No .env or vars missing"
 
 # Quick API smoke test (override EMAIL and PASS)
 # Usage: make api-login EMAIL=foo@example.com PASS=Passw0rd!

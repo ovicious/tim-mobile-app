@@ -1,12 +1,14 @@
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert, ActivityIndicator } from 'react-native';
-import { theme } from '../theme';
+import { useThemeColors } from '../theme';
 import { API_BASE_URL } from '../api';
 
 export default function VerifyEmailScreen({ route, navigation }: any) {
   const { email } = route.params;
   const [token, setToken] = useState('');
   const [loading, setLoading] = useState(false);
+  const { theme } = useThemeColors();
+  const styles = useMemo(() => createStyles(theme), [theme]);
 
   const handleVerify = async () => {
     if (!token) {
@@ -97,77 +99,79 @@ export default function VerifyEmailScreen({ route, navigation }: any) {
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: theme.colors.background,
-    padding: 24,
-    paddingTop: 60,
-  },
-  header: {
-    marginBottom: 40,
-  },
-  title: {
-    fontSize: 32,
-    fontWeight: '700',
-    color: theme.colors.text,
-    marginBottom: 16,
-  },
-  subtitle: {
-    fontSize: 16,
-    color: theme.colors.textMuted,
-    marginBottom: 12,
-  },
-  email: {
-    color: theme.colors.primary,
-    fontWeight: '600',
-  },
-  instructions: {
-    fontSize: 14,
-    color: theme.colors.textMuted,
-    lineHeight: 20,
-  },
-  form: {
-    gap: 16,
-  },
-  label: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: theme.colors.text,
-    marginBottom: 8,
-  },
-  input: {
-    backgroundColor: theme.colors.surface,
-    borderWidth: 1,
-    borderColor: theme.colors.border,
-    borderRadius: 12,
-    padding: 16,
-    fontSize: 16,
-    color: theme.colors.text,
-    marginBottom: 16,
-  },
-  button: {
-    backgroundColor: theme.colors.primary,
-    padding: 16,
-    borderRadius: 12,
-    alignItems: 'center',
-    marginTop: 8,
-  },
-  buttonDisabled: {
-    opacity: 0.6,
-  },
-  buttonText: {
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: '700',
-  },
-  linkButton: {
-    marginTop: 16,
-    alignItems: 'center',
-  },
-  linkText: {
-    color: theme.colors.primary,
-    fontSize: 14,
-    fontWeight: '600',
-  },
-});
+function createStyles(theme: ReturnType<typeof useThemeColors>['theme']) {
+  return StyleSheet.create({
+    container: {
+      flex: 1,
+      backgroundColor: theme.colors.background,
+      padding: 24,
+      paddingTop: 60,
+    },
+    header: {
+      marginBottom: 40,
+    },
+    title: {
+      fontSize: 32,
+      fontWeight: '700',
+      color: theme.colors.text,
+      marginBottom: 16,
+    },
+    subtitle: {
+      fontSize: 16,
+      color: theme.colors.textMuted,
+      marginBottom: 12,
+    },
+    email: {
+      color: theme.colors.primary,
+      fontWeight: '600',
+    },
+    instructions: {
+      fontSize: 14,
+      color: theme.colors.textMuted,
+      lineHeight: 20,
+    },
+    form: {
+      gap: 16,
+    },
+    label: {
+      fontSize: 14,
+      fontWeight: '600',
+      color: theme.colors.text,
+      marginBottom: 8,
+    },
+    input: {
+      backgroundColor: theme.colors.surface,
+      borderWidth: 1,
+      borderColor: theme.colors.border,
+      borderRadius: 12,
+      padding: 16,
+      fontSize: 16,
+      color: theme.colors.text,
+      marginBottom: 16,
+    },
+    button: {
+      backgroundColor: theme.colors.primary,
+      padding: 16,
+      borderRadius: 12,
+      alignItems: 'center',
+      marginTop: 8,
+    },
+    buttonDisabled: {
+      opacity: 0.6,
+    },
+    buttonText: {
+      color: '#fff',
+      fontSize: 16,
+      fontWeight: '700',
+    },
+    linkButton: {
+      marginTop: 16,
+      alignItems: 'center',
+    },
+    linkText: {
+      color: theme.colors.primary,
+      fontSize: 14,
+      fontWeight: '600',
+    },
+  });
+}

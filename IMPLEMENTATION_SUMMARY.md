@@ -10,11 +10,12 @@ Built a complete Expo React Native mobile app for gym members and trainers with 
 ## 📱 Completed Features
 
 ### 1. Authentication System ✅
-- **Login Screen**: Email/password authentication
-- **JWT Token Management**: Secure storage using expo-secure-store
-- **Auto-login**: Token persistence across app restarts
-- **Logout**: Secure token removal and session cleanup
+- **Login Screen**: Email/password authentication with password visibility toggle (eye icon)
+- **JWT Token Management**: Secure storage using expo-secure-store with auto-login on app restart
+- **Token Lifecycle**: Automatic 401 detection and token cleanup with periodic polling to sync UI state
+- **Logout**: Secure token removal and session cleanup with redirect to login
 - **Protected Routes**: Navigation gating based on auth state
+- **Admin-App Parity**: Follows same token lifecycle patterns as admin-mobile-app for consistency
 
 **Files Created/Modified:**
 - `app/auth.tsx` - Auth context provider
@@ -35,9 +36,22 @@ Built a complete Expo React Native mobile app for gym members and trainers with 
 - **Profile Display**: Name, email, role, business info
 - **Logout Button**: Secure logout functionality
 - **API Integration**: Profile endpoint integration
+- **App Preferences**: Theme (system/light/dark) and language (EN/DE) controls with persistent SecureStore-backed state and instant UI updates
+- **Localization**: Lightweight i18n layer with reusable hook and translation tables for Profile UI labels
+- **Resilient Profile UI**: Pull-to-refresh, graceful placeholders, and error messaging keep the Profile screen functional even during API outages
+
+### 4. API Client Architecture ✅
+- **Modular Design**: Separated `app/api/client.ts` (HTTP transport) and `app/api/auth.ts` (endpoints) like admin-app
+- **Unified Gateway**: Both member and admin apps use same API Gateway endpoint (`yhiir8f9d1`)
+- **Environment Config**: `EXPO_PUBLIC_API_BASE_URL` for consistency with admin-app patterns
+- **Secure Token Handling**: SecureStore integration for auth token persistence and automatic header injection
+- **Comprehensive Logging**: Request/response/error logging via logger utility
+- **Backward Compatibility**: Legacy `apiGet/apiPost/apiDelete` functions still work, new code uses modular client
 
 **Files Created/Modified:**
 - `app/screens/ProfileScreen.tsx` - Profile UI with logout
+- `app/preferences/PreferencesProvider.tsx` - Theme & language persistence with hooks
+- `app/i18n/` - Translation registry (`index.ts`, `locales.ts`, `types.ts`) with language metadata
 
 ### 4. Class Booking System ✅
 - **Classes List**: View available classes by business
@@ -138,6 +152,16 @@ Built a complete Expo React Native mobile app for gym members and trainers with 
 **Files Fixed:**
 - `app/screens/LoginScreen.tsx`
 - `app/api.ts`
+
+### Issue 6: Theme Hook Crash ✅
+**Problem**: `VerifyEmailScreen` imported a non-existent `theme` constant, causing a runtime crash (`Cannot read property 'colors' of undefined`).
+
+**Solution**:
+- Switched the screen to use the `useThemeColors` hook like the rest of the app.
+- Memoized a theme-aware StyleSheet so styles stay in sync with light/dark mode without triggering undefined errors.
+
+**Files Fixed:**
+- `app/screens/VerifyEmailScreen.tsx`
 
 ---
 

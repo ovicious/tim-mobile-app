@@ -24,6 +24,7 @@ export default function NewBookingScreen() {
   const navigation = useNavigation<any>();
   const [gyms, setGyms] = useState<UserGym[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   const sharedStyles = useMemo(() => theme ? createSharedStyles(theme) : {} as any, [theme]);
   const styles = useMemo(() => theme ? createNewBookingStyles(theme) : {} as any, [theme]);
@@ -31,22 +32,46 @@ export default function NewBookingScreen() {
   useEffect(() => {
     async function load() {
       try {
+        setError(null);
+        console.log('[NewBookingScreen] Loading user profile...');
         const profile = await getProfile();
+        console.log('[NewBookingScreen] Profile received:', {
+          hasData: !!profile?.data,
+          hasBusinessId: !!profile?.data?.business_id || !!profile?.business_id,
+          businessCount: profile?.data?.businesses?.length || profile?.businesses?.length || 0,
+        });
+        
         const data = profile?.data ?? profile ?? {};
         // Try multiple shapes to stay compatible
         const arr: UserGym[] =
           data?.businesses?.map((b: any) => ({ business_id: b.business_id || b.id, name: b.name, status: b.membership_status || b.status })) ||
           (data?.business_id ? [{ business_id: data.business_id, name: data.business_name || 'My Gym', status: 'active' }] : []);
+        
+        console.log('[NewBookingScreen] All gyms found:', arr);
+        
         // Prefer gyms where membership is active/approved if status present
         const filtered = arr.filter(g => !g.status || /(active|approved)/i.test(g.status));
+        console.log('[NewBookingScreen] Filtered active/approved gyms:', filtered);
+        
         setGyms(filtered);
+        
+        if (filtered.length === 0 && arr.length > 0) {
+          setError('No active gym memberships found. Please contact support.');
+        } else if (filtered.length === 0) {
+          setError('No gyms found in your profile. Please complete your profile.');
+        }
       } catch (e: any) {
-        if (e?.code === 401) {
-          alert('Your session expired. Please log in again.');
-          await logout();
+        console.error('[NewBookingScreen] Error loading profile:', e);
+        
+        if (e?.code === 401 || e?.response?.status === 401) {
+          console.log('[NewBookingScreen] Session issue detected.');
+          setError('Session issue detected. Please retry.');
           return;
         }
-        // Non-fatal otherwise: keep empty list and let ListEmptyComponent render
+        
+        const errorMsg = e?.message || e?.response?.data?.message || 'Failed to load gyms. Please try again.';
+        setError(errorMsg);
+        console.warn('[NewBookingScreen] Non-fatal error:', errorMsg);
       } finally {
         setLoading(false);
       }
@@ -69,6 +94,14 @@ export default function NewBookingScreen() {
   return (
     <View style={[styles.container, { backgroundColor: theme.colors.background }]}>
       <Text style={[styles.title, { color: theme.colors.text }]}>Select a Gym</Text>
+      
+      {/* Error message display */}
+      {error && (
+        <View style={[styles.errorBanner, { backgroundColor: theme.colors.error }]}>
+          <Text style={styles.errorText}>{error}</Text>
+        </View>
+      )}
+      
       <FlatList
         data={gyms}
         keyExtractor={(g) => g.business_id}
@@ -79,7 +112,7 @@ export default function NewBookingScreen() {
             theme={theme}
             variant="default"
             style={styles.card}
-            onPress={() => navigation.navigate('BookClass', { businessId: item.business_id })}
+            onPress={() => navigation.navigate('Gym', { businessId: item.business_id })}
           >
             <View style={[styles.logoCircle, { backgroundColor: theme.colors.primary }]}>
               <Text style={styles.logoText}>{initialsFromName(item.name)}</Text>
@@ -102,5 +135,15 @@ function createNewBookingStyles(theme: any) {
     logoText: { color: '#fff', fontWeight: '700', fontSize: 14 },
     cardText: { flex: 1, fontSize: 16, fontWeight: '600' },
     emptyText: { textAlign: 'center', marginTop: 20, fontSize: 16 },
+    errorBanner: {
+      padding: 12,
+      borderRadius: 6,
+      marginBottom: 12,
+    },
+    errorText: {
+      color: '#fff',
+      fontSize: 14,
+      fontWeight: '500',
+    },
   });
 }

@@ -8,9 +8,10 @@
 import { AppTheme, ThemeMode } from './types';
 import { lightTheme } from './light';
 import { darkTheme } from './dark';
-import { Appearance, useColorScheme } from 'react-native';
+import { Appearance } from 'react-native';
 import { DarkTheme as NavDarkTheme, DefaultTheme as NavDefaultTheme } from '@react-navigation/native';
 import { logger } from '../utils/logger';
+import { usePreferences } from '../preferences/PreferencesProvider';
 
 // ============ THEME RETRIEVAL ============
 
@@ -47,49 +48,43 @@ export const getSystemThemeMode = (): ThemeMode => {
  */
 export function useThemeColors(): { theme: AppTheme; isDarkMode: boolean } {
   try {
-    const schemeHook = useColorScheme();
-    const isDark = schemeHook === 'dark';
-    
-    // Get theme object
+    const { resolvedThemeMode } = usePreferences();
+    const isDark = resolvedThemeMode === 'dark';
     const theme = isDark ? darkTheme : lightTheme;
-    
-    // Extensive validation to catch any issues
+
     if (!theme) {
-      logger.error('useThemeColors', 'Theme object is null or undefined', { isDark, schemeHook });
+      logger.error('useThemeColors', 'Theme object is null or undefined', { isDark });
       return { theme: lightTheme, isDarkMode: false };
     }
-    
+
     if (!theme.colors) {
-      logger.error('useThemeColors', 'Theme.colors is undefined', { 
-        isDark, 
-        schemeHook,
-        themeKeys: Object.keys(theme || {})
-      });
-      return { theme: lightTheme, isDarkMode: false };
-    }
-    
-    // Verify critical color properties exist
-    const requiredColors = ['background', 'text', 'primary', 'surface', 'border'];
-    const missingColors = requiredColors.filter(color => !theme.colors[color as keyof typeof theme.colors]);
-    
-    if (missingColors.length > 0) {
-      logger.error('useThemeColors', 'Theme missing required colors', { 
-        missingColors,
+      logger.error('useThemeColors', 'Theme.colors is undefined', {
         isDark,
-        availableColors: Object.keys(theme.colors)
+        themeKeys: Object.keys(theme || {}),
       });
       return { theme: lightTheme, isDarkMode: false };
     }
 
-    logger.debug('useThemeColors', 'Theme validated successfully', { 
+    const requiredColors = ['background', 'text', 'primary', 'surface', 'border'];
+    const missingColors = requiredColors.filter(color => !theme.colors[color as keyof typeof theme.colors]);
+
+    if (missingColors.length > 0) {
+      logger.error('useThemeColors', 'Theme missing required colors', {
+        missingColors,
+        isDark,
+        availableColors: Object.keys(theme.colors),
+      });
+      return { theme: lightTheme, isDarkMode: false };
+    }
+
+    logger.debug('useThemeColors', 'Theme validated successfully', {
       isDark,
-      colorCount: Object.keys(theme.colors).length 
+      colorCount: Object.keys(theme.colors).length,
     });
 
     return { theme, isDarkMode: isDark };
   } catch (error) {
     logger.error('useThemeColors', 'Fatal error in useThemeColors hook', error);
-    // Fallback to light theme on any error
     return { theme: lightTheme, isDarkMode: false };
   }
 }
@@ -193,5 +188,5 @@ export const getInfoBackground = (theme: AppTheme): string => {
     : hexToRgba(theme.colors.info, 0.15);
 };
 
-// Note: Theme context and provider are exported from ThemeProvider.tsx
+// Note: Theme preferences are managed via PreferencesProvider.tsx
 // This keeps TypeScript .ts files pure while JSX components use .tsx

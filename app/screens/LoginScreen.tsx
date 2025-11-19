@@ -1,5 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, ActivityIndicator, Alert } from 'react-native';
+import { MaterialIcons } from '@expo/vector-icons';
 import { useThemeColors } from '../theme';
 import { createSharedStyles } from '../styles/sharedStyles';
 import { Button } from '../components';
@@ -12,6 +13,7 @@ export default function LoginScreen({ navigation }: any) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
   const sharedStyles = useMemo(() => createSharedStyles(theme), [theme]);
   const styles = useMemo(() => createLoginStyles(theme), [theme]);
@@ -70,14 +72,32 @@ export default function LoginScreen({ navigation }: any) {
         onChangeText={setEmail}
         placeholderTextColor={theme.colors.textMuted}
       />
-      <TextInput
-        style={[sharedStyles.input, { color: theme.colors.text, borderColor: theme.colors.secondary, marginBottom: 20 }]}
-        placeholder="Password"
-        secureTextEntry
-        value={password}
-        onChangeText={setPassword}
-        placeholderTextColor={theme.colors.textMuted}
-      />
+      <View style={styles.passwordContainer}>
+        <TextInput
+          style={[styles.passwordInput, { color: theme.colors.text }]}
+          placeholder="Password"
+          secureTextEntry={!showPassword}
+          value={password}
+          onChangeText={setPassword}
+          placeholderTextColor={theme.colors.textMuted}
+          autoCapitalize="none"
+          editable={!loading}
+        />
+        <TouchableOpacity
+          style={styles.eyeButton}
+          onPress={() => setShowPassword(!showPassword)}
+          activeOpacity={0.7}
+          accessibilityRole="button"
+          accessibilityLabel={showPassword ? 'Hide password' : 'Show password'}
+          disabled={loading}
+        >
+          <MaterialIcons
+            name={showPassword ? 'visibility' : 'visibility-off'}
+            size={22}
+            color={theme.colors.textMuted}
+          />
+        </TouchableOpacity>
+      </View>
       <Button
         theme={theme}
         title={loading ? 'Logging in...' : 'Login'}
@@ -99,6 +119,27 @@ function createLoginStyles(theme: any) {
   return StyleSheet.create({
     containerBase: { flex: 1, padding: 16, justifyContent: 'center' },
     title: { fontSize: 24, fontWeight: '700', textAlign: 'center', marginBottom: 24 },
+    passwordContainer: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      marginBottom: 20,
+      borderWidth: 1,
+      borderColor: theme.colors.border,
+      borderRadius: 8,
+      backgroundColor: theme.colors.surface,
+    },
+    passwordInput: {
+      flex: 1,
+      paddingHorizontal: 16,
+      paddingVertical: 12,
+      fontSize: 15,
+      color: theme.colors.text,
+    },
+    eyeButton: {
+      padding: 12,
+      justifyContent: 'center',
+      alignItems: 'center',
+    },
     signupLink: { marginTop: 20, alignItems: 'center' },
     signupText: { fontSize: 14 },
     signupBold: { fontWeight: '700' },

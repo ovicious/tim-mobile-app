@@ -12,13 +12,19 @@ export type AppTheme = {
   colors: {
     // Primary & Secondary
     primary: string;
+    primaryDark?: string;
+    primaryLight?: string;
     secondary: string;
     
     // Status Colors
     success: string;
+    successLight?: string;
     error: string;
+    errorLight?: string;
     warning: string;
+    warningLight?: string;
     info: string;
+    infoLight?: string;
     
     // Background & Surface
     background: string;
@@ -27,7 +33,9 @@ export type AppTheme = {
     
     // Text
     text: string;
+    textSecondary?: string;
     textMuted: string;
+    textInverse?: string;
     
     // Borders & Dividers
     border: string;
@@ -40,5 +48,8 @@ export type AppTheme = {
     
     // Navigation
     tabBg: string;
+    
+    // Special
+    gradient?: string[];
   };
 };

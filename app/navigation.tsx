@@ -12,7 +12,11 @@ import UserDashboardScreen from './screens/UserDashboardScreen';
 import ClassesScreen from './screens/ClassesScreen';
 import TrainersScreen from './screens/TrainersScreen';
 import ProfileScreen from './screens/ProfileScreen';
+import EditProfileScreen from './screens/EditProfileScreen';
+import ChangePasswordScreen from './screens/ChangePasswordScreen';
 import ClassBookingScreen from './screens/ClassBookingScreen';
+import BookClassScreen from './screens/BookClassScreen';
+import ClassDetailsScreen from './screens/ClassDetailsScreen';
 import MyBookingsScreen from './screens/MyBookingsScreen';
 import NewBookingScreen from './screens/NewBookingScreen';
 import LoginScreen from './screens/LoginScreen';
@@ -21,11 +25,22 @@ import VerifyEmailScreen from './screens/VerifyEmailScreen';
 import CompleteProfileScreen from './screens/CompleteProfileScreen';
 import SelectGymScreen from './screens/SelectGymScreen';
 import PendingApprovalScreen from './screens/PendingApprovalScreen';
+import SubscriptionsScreen from './screens/SubscriptionsScreen';
+import MySubscriptionScreen from './screens/MySubscriptionScreen';
+import NotificationsScreen from './screens/NotificationsScreen';
+import VouchersScreen from './screens/VouchersScreen';
+import TicketsScreen from './screens/TicketsScreen';
+import CreditScreen from './screens/CreditScreen';
+import GymProfileScreen from './screens/GymProfileScreen';
+import NewsScreen from './screens/NewsScreen';
+import ShopScreen from './screens/ShopScreen';
 import { AuthProvider, useAuth } from './auth';
 import { DeviceUiProvider } from './device-ui';
 import { useThemeColors } from './theme';
 import { getProfile } from './api';
 import { logger } from './utils/logger';
+import { PreferencesProvider } from './preferences/PreferencesProvider';
+import { getGymName, getGymShortName } from './utils/gymUtils';
 
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -34,7 +49,7 @@ function Tabs() {
   logger.debug('Tabs', 'Initializing tab navigation');
   const insets = useSafeAreaInsets();
   const { theme } = useThemeColors();
-  const [userInfo, setUserInfo] = useState<{ firstName: string; gymName: string } | null>(null);
+  const [userInfo, setUserInfo] = useState<{ firstName: string; gymName: string; gymShort: string } | null>(null);
 
   // Defensive check - theme should exist at this point
   if (!theme || !theme.colors) {
@@ -47,16 +62,23 @@ function Tabs() {
       try {
         logger.debug('Tabs', 'Loading user info');
         const profile = await getProfile();
+        
+        // Use utility functions for consistent gym name extraction
+        const gymName = getGymName(profile);
+        const gymShort = getGymShortName(gymName);
+        
         const data = profile?.data ?? profile;
         const info = {
           firstName: data?.first_name || 'Profile',
-          gymName: data?.business_name || data?.business_id?.substring(0, 8) || 'Gym',
+          gymName,
+          gymShort,
         };
-        logger.info('Tabs', 'User info loaded', { firstName: info.firstName, gymName: info.gymName });
+        
+        logger.info('Tabs', 'User info loaded', { firstName: info.firstName, gymName: info.gymName, gymShort: info.gymShort });
         setUserInfo(info);
       } catch (e) {
         logger.warn('Tabs', 'Failed to load user info, using defaults', e);
-        setUserInfo({ firstName: 'Profile', gymName: 'Gym' });
+        setUserInfo({ firstName: 'Profile', gymName: 'My Gym', gymShort: 'GYM' });
       }
     }
     loadUserInfo();
@@ -100,9 +122,9 @@ function Tabs() {
       />
       <Tab.Screen
         name="Gym"
-        component={ClassBookingScreen}
+        component={GymProfileScreen}
         options={{
-          tabBarLabel: userInfo?.gymName || 'Gym',
+          tabBarLabel: userInfo?.gymShort || 'GYM',
           tabBarIcon: ({ color, size }) => <Ionicons name="fitness-outline" size={size ?? 22} color={color} />,
         }}
       />
@@ -112,13 +134,15 @@ function Tabs() {
 
 export default function AppNavigation() {
   return (
-    <AuthProvider>
-      <SafeAreaProvider>
-        <DeviceUiProvider>
-          <NavigationContent />
-        </DeviceUiProvider>
-      </SafeAreaProvider>
-    </AuthProvider>
+    <PreferencesProvider>
+      <AuthProvider>
+        <SafeAreaProvider>
+          <DeviceUiProvider>
+            <NavigationContent />
+          </DeviceUiProvider>
+        </SafeAreaProvider>
+      </AuthProvider>
+    </PreferencesProvider>
   );
 }
 
@@ -180,9 +204,21 @@ function NavigationContent() {
           <Stack.Screen name="Dashboard" component={DashboardScreen} />
           <Stack.Screen name="Home" component={HomeScreen} />
           <Stack.Screen name="Classes" component={ClassesScreen} />
+          <Stack.Screen name="ClassDetails" component={ClassDetailsScreen} options={{ headerShown: false }} />
+          <Stack.Screen name="ClassBooking" component={ClassBookingScreen} options={{ headerShown: true, title: 'Book a Class' }} />
           <Stack.Screen name="MyBookings" component={MyBookingsScreen} options={{ headerShown: true, title: 'My Bookings' }} />
           <Stack.Screen name="NewBooking" component={NewBookingScreen} options={{ headerShown: true, title: 'New Booking' }} />
-          <Stack.Screen name="BookClass" component={ClassBookingScreen} options={{ headerShown: true, title: 'Book a Class' }} />
+          <Stack.Screen name="BookClass" component={BookClassScreen} options={{ headerShown: true, title: 'Book a Class' }} />
+          <Stack.Screen name="EditProfile" component={EditProfileScreen} options={{ headerShown: false }} />
+          <Stack.Screen name="ChangePassword" component={ChangePasswordScreen} options={{ headerShown: false }} />
+          <Stack.Screen name="Subscriptions" component={SubscriptionsScreen} options={{ headerShown: false }} />
+          <Stack.Screen name="MySubscription" component={MySubscriptionScreen} options={{ headerShown: false }} />
+          <Stack.Screen name="Notifications" component={NotificationsScreen} options={{ headerShown: true, title: 'Notifications' }} />
+          <Stack.Screen name="Vouchers" component={VouchersScreen} options={{ headerShown: true, title: 'Vouchers' }} />
+          <Stack.Screen name="Tickets" component={TicketsScreen} options={{ headerShown: true, title: 'Tickets' }} />
+          <Stack.Screen name="Credit" component={CreditScreen} options={{ headerShown: true, title: 'Credit' }} />
+          <Stack.Screen name="News" component={NewsScreen} options={{ headerShown: true, title: 'News & Updates' }} />
+          <Stack.Screen name="Shop" component={ShopScreen} options={{ headerShown: true, title: 'Gym Shop' }} />
         </Stack.Navigator>
       </View>
     );
