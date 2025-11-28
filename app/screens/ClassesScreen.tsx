@@ -8,6 +8,7 @@ import {
   TouchableOpacity,
   RefreshControl,
 } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { MaterialIcons } from '@expo/vector-icons';
@@ -292,14 +293,14 @@ export default function ClassesScreen() {
             <View style={styles.classDetails}>
               {item.instructor_name && (
                 <View style={styles.detailRow}>
-                  <Text style={styles.detailIcon}>👤</Text>
+                  <Ionicons name="person" size={14} color={theme.colors.textSecondary} />
                   <Text style={styles.detailText}>{item.instructor_name}</Text>
                 </View>
               )}
 
               {item.start_time && (
                 <View style={styles.detailRow}>
-                  <Text style={styles.detailIcon}>🕐</Text>
+                  <Ionicons name="time" size={14} color={theme.colors.textSecondary} />
                   <Text style={styles.detailText}>
                     {new Date(item.start_time).toLocaleString()}
                   </Text>

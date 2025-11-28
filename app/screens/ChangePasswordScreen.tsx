@@ -9,6 +9,7 @@ import {
   Alert,
   ActivityIndicator,
 } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { MaterialIcons } from '@expo/vector-icons';
@@ -194,10 +195,16 @@ export default function ChangePasswordScreen() {
           padding: 12,
           marginBottom: 20,
         },
+        cautionContent: {
+          flexDirection: 'row',
+          alignItems: 'flex-start',
+          gap: 8,
+        },
         cautionText: {
           fontSize: 12,
           color: theme.colors.error,
           lineHeight: 16,
+          flex: 1,
         },
       }),
     [theme, insets]
@@ -474,9 +481,12 @@ export default function ChangePasswordScreen() {
         </View>
 
         <View style={styles.cautionBox}>
-          <Text style={styles.cautionText}>
-            ⚠️ You will be logged out on all devices after changing your password. You'll need to log in again.
-          </Text>
+          <View style={styles.cautionContent}>
+            <Ionicons name="warning" size={20} color={theme.colors.warning} />
+            <Text style={styles.cautionText}>
+              You will be logged out on all devices after changing your password. You'll need to log in again.
+            </Text>
+          </View>
         </View>
 
         <View style={styles.actionButtons}>
