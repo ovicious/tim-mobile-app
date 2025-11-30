@@ -2,6 +2,29 @@
 
 A mobile application for gym members and trainers built with Expo and React Native.
 
+## 📚 Documentation
+
+**All detailed documentation has been moved to the centralized documentation repository:**
+[tim-docs/04-mobile-apps/member-app](../tim-docs/04-mobile-apps/member-app/)
+
+### Quick Reference Documents
+
+- [Quick Start Guide](../tim-docs/04-mobile-apps/member-app/QUICKSTART.md)
+- [Start Here](../tim-docs/04-mobile-apps/member-app/START_HERE.md)
+- [Booking Quick Reference](../tim-docs/04-mobile-apps/member-app/BOOKING_QUICK_REFERENCE.md)
+- [Payment Quick Reference](../tim-docs/04-mobile-apps/member-app/PAYMENT_QUICK_REFERENCE.md)
+- [Testing Quick Guide](../tim-docs/04-mobile-apps/member-app/TESTING_QUICK_GUIDE.md)
+- [Debug Rebuild Guide](../tim-docs/04-mobile-apps/member-app/DEBUG_REBUILD_GUIDE.md)
+
+### Implementation & Feature Docs
+
+- [Complete Documentation Index](../tim-docs/04-mobile-apps/member-app/COMPLETE_DOCUMENTATION_INDEX.md)
+- [Implementation Summary Q4 2025](../tim-docs/04-mobile-apps/member-app/IMPLEMENTATION_SUMMARY_Q4_2025.md)
+- [Final Completion Report](../tim-docs/04-mobile-apps/member-app/FINAL_COMPLETION_REPORT.md)
+- [Project Completion Summary](../tim-docs/04-mobile-apps/member-app/PROJECT_COMPLETION_SUMMARY.md)
+
+---
+
 ## 🚀 Features
 
 ### Authentication
