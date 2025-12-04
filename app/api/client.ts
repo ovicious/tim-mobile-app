@@ -14,7 +14,21 @@
 import * as SecureStore from 'expo-secure-store';
 import { logger } from '../utils/logger';
 
-const BASE_URL = process.env.EXPO_PUBLIC_API_BASE_URL || 'https://yhiir8f9d1.execute-api.eu-central-1.amazonaws.com/dev';
+// Import expo-constants safely
+let ExpoConstants: any = {};
+try {
+  // eslint-disable-next-line @typescript-eslint/no-var-requires
+  ExpoConstants = require('expo-constants');
+} catch (e) {
+  // noop: continue with process.env fallback
+}
+
+// Resolve API base URL priority:
+// 1. Expo extra.API_URL (app.json/app.config.js)
+// 2. EXPO_PUBLIC_API_URL env var
+// 3. Fallback to known dev endpoint
+const resolvedEnvUrl = (ExpoConstants?.expoConfig?.extra as any)?.API_URL || process.env.EXPO_PUBLIC_API_URL;
+const BASE_URL = resolvedEnvUrl || 'https://1pst60knzc.execute-api.eu-central-1.amazonaws.com/dev';
 
 logger.debug('API Client', 'Initialized', { baseURL: BASE_URL });
 
